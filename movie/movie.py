@@ -2,13 +2,16 @@ import os
 import requests
 import json
 from PIL import Image
+import os 
 
 class Movie:
     def __init__(self):
         self.name = None
         self.__TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 
-        with open("./config.json", "r") as file:
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        
+        with open(os.path.join(dir_path, "config.json"), "r") as file:
             self.config = json.load(file)
 
         self.url = self.config["basic_url"]
@@ -24,6 +27,12 @@ class Movie:
             ):
         self.preference = user_preference
 
+        mv_basic_response = self.fetch_movie(movie_name)
+        movies = self.movie_parse_response(mv_basic_response)
+
+        return movies
+
+    def fetch_movie(self, movie_name:str=None):
         # Fetch basic movie information.
         try:
             # Make a GET request
@@ -44,7 +53,7 @@ class Movie:
         except requests.exceptions.RequestException as e:
             print(f"Error during API request: {e}")
         return None
-    
+
     def fetch_collection(self, id):
         """Fetch movie homepage."""
 
@@ -68,7 +77,7 @@ class Movie:
             print(f"Error during API request: {e}")
         return None
 
-    def movie_parse_response(self, movie_response:dict, homepage_response:dict=None, *args, **kwargs):
+    def movie_parse_response(self, movie_response:dict, *args, **kwargs):
         num_results = self.preference.get("num_results", 3)
         genre_preference = self.preference.get("movie_genre", None)
 
@@ -111,6 +120,11 @@ class Movie:
                     collection_response = self.fetch_collection(movie_info["id"])
                     if collection_response["belongs_to_collection"]:
                         movie_info["collection"] = collection_response["belongs_to_collection"]["name"]
+                        movie_info["collection_poster_path"] = collection_response["belongs_to_collection"]["poster_path"]
+                        if movie_info["collection_poster_path"]:
+                            movie_info["collection_poster_url"] = \
+                                f"https://image.tmdb.org/t/p/w154{\
+                                    movie_info["collection_poster_path"]}"
                     
                     movie_info["homepage"] = collection_response["homepage"]
 
@@ -158,9 +172,7 @@ class Movie:
 if __name__ == "__main__":
     movie = Movie()
     response = movie.movie_search("Harry Potter", {"num_results": 3})
-    # print(json.dumps(response))
     mv_list = movie.movie_parse_response(response)
-    print(mv_list)
     
 
     # # Image.open(requests.get(mv_list[0]["poster_url"], stream=True).raw)

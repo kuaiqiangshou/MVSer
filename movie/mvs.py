@@ -1,5 +1,7 @@
 from PIL import Image
+from io import BytesIO
 import requests
+from IPython.display import display
 from termcolor import colored
 
 from movie.movie import Movie
@@ -61,19 +63,51 @@ class MVS(Movie, Music):
         movie_name = user.movie_name
 
         movie_results = self.return_movie_results(movie_name, self.preference)
-        music_results = self.return_music_results(movie_name, self.preference)
+        # music_results = self.return_music_results(movie_name, self.preference)
 
         # If user wants recommendation, return it.
-        if self.preference["is_recom"]:
-            recom_results = self.return_recom(self.preference["is_recom"])
+        # if self.preference["is_recom"]:
+        #     recom_results = self.return_recom(self.preference["is_recom"])
 
-        # Display results.
+        """Display results"""
         # Display movie results.
         for item in movie_results:
+            # Display poster.
             Image.open(requests.get(item["poster_url"], stream=True).raw)
-            print(colored(item["original_title"], "red"), "\n", colored('world', 'green'))
+            print(colored(item["original_title"], "green"))
+            if item["poster_url"]:
+                img_reponse = requests.get(item["poster_url"])
+                img = Image.open(BytesIO(img_reponse.content))
+                display(img)
 
-        print("movie result: ", movie_results)
-        print("music_results: ", music_results)
-        print("recommendation: ", recom_results)
-        
+            if item["overview"]:
+                print(colored(item["overview"], 'yellow'))
+
+            if item["homepage"]:
+                print(f"Homepage: {item["homepage"]}")
+            else:
+                print(f"Homepage: Sorry there is no available link. -.-")
+
+            if item["release_date"]:
+                print(f"Release Date: {item["release_date"]}")
+            else:
+                print(f"Release Date: Unknown.")
+
+            if item["genre_names"]:
+                print(f"Genre: {item["genre_names"]}")
+            
+            if item["collection"]:
+                print(f"Belongs to collection: {item["collection"]}")
+                if item["collection_poster_url"]:
+                    img_reponse = requests.get(item["collection_poster_url"])
+                    img = Image.open(BytesIO(img_reponse.content))
+                    display(img)
+
+            # For pretty print.
+            print()
+            print("--------- MUSIC ---------")
+
+        # print("movie result: ", movie_results)
+        # print("music_results: ", music_results)
+        # print("recommendation: ", recom_results)
+
