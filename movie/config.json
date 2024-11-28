@@ -5,7 +5,8 @@
     },
     "basic_url": "https://api.themoviedb.org/3",
     "search_endpoint": "/search/movie",
-    "collection_endpoint": "/movie/",
+    "collection_endpoint": "/movie/MOVIE_ID?language=en-US&page=1",
+    "recommendation_endpoint": "/trending/movie/day?language=en-US",
     "MOVIE_GENRES_NUMBER_NAME": {
         "28": "Action",
         "12": "Adventure",

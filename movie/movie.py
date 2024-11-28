@@ -18,17 +18,17 @@ class Movie:
         self.header = self.config["header"]
         self.header["Authorization"] += self.__TMDB_API_KEY
 
-        self.preference = None
-
         self.test_api_connection(self.url, self.__TMDB_API_KEY)
 
     def movie_search(
             self, movie_name:str=None, user_preference={}, *args, **kwargs
             ):
-        self.preference = user_preference
-
         mv_basic_response = self.fetch_movie(movie_name)
-        movies = self.movie_parse_response(mv_basic_response)
+        movies = self.movie_parse_response(
+            movie_response=mv_basic_response,
+            num_results=user_preference["num_results"],
+            genre=user_preference["movie_genre"]
+            )
 
         return movies
 
@@ -59,9 +59,9 @@ class Movie:
 
         try:
             # Make a GET request
-            endpoint = self.config["collection_endpoint"]
+            endpoint = self.config["collection_endpoint"].replace("MOVIE_ID", str(id))
 
-            query = f"{self.url}{endpoint}{id}?language=en-US&page=1"
+            query = f"{self.url}{endpoint}"
             print(query)
             mv_col_response = requests.get(query, headers=self.header)
 
@@ -77,10 +77,11 @@ class Movie:
             print(f"Error during API request: {e}")
         return None
 
-    def movie_parse_response(self, movie_response:dict, *args, **kwargs):
-        num_results = self.preference.get("num_results", 3)
-        genre_preference = self.preference.get("movie_genre", None)
-
+    def movie_parse_response(
+            self, movie_response:dict, num_results:int=3, 
+            genre_preference:list=None, is_recom:bool=False, 
+            *args, **kwargs
+        ):
         movies = []
         count = 0
         if movie_response:
@@ -117,6 +118,7 @@ class Movie:
                         movie_info["genre_names"] = names
 
                     # Get collections.
+                    # if not is_recom:
                     collection_response = self.fetch_collection(movie_info["id"])
                     if collection_response["belongs_to_collection"]:
                         movie_info["collection"] = collection_response["belongs_to_collection"]["name"]
@@ -125,7 +127,7 @@ class Movie:
                             movie_info["collection_poster_url"] = \
                                 f"https://image.tmdb.org/t/p/w154{\
                                     movie_info["collection_poster_path"]}"
-                    
+                        
                     movie_info["homepage"] = collection_response["homepage"]
 
                     movies.append(movie_info) 
@@ -135,7 +137,37 @@ class Movie:
         return movies[:num_results]
 
     def movie_recom(self, recom_preference: dict[str, any]):
-        pass
+        recoms_response = self.fetch_recom()
+        movie_recoms = self.movie_parse_response(
+            movie_response=recoms_response,
+            num_results=recom_preference["num_recom"],
+            genre_preference=recom_preference["genre"],
+            is_recom=True
+            )
+        
+        return movie_recoms
+
+    def fetch_recom(self):
+        """Fetch movie recommadation based on search movie."""
+        try:
+            # Make a GET request
+            endpoint = self.config["recommendation_endpoint"]
+
+            query = f"{self.url}{endpoint}"
+            print(query)
+            mv_recom_response = requests.get(query, headers=self.header)
+
+            if mv_recom_response.status_code == 200:
+                print("Data fetched successfully!")
+                mv_recom_response = mv_recom_response.json()
+                return mv_recom_response
+                
+            else:
+                print(f"Failed to fetch data. HTTP status code: {mv_recom_response.status_code}")
+                print("Response:", mv_recom_response.json())
+        except requests.exceptions.RequestException as e:
+            print(f"Error during API request: {e}")
+        return None
 
     def test_api_connection(self, api_url, api_key):
         """
@@ -171,14 +203,11 @@ class Movie:
 
 if __name__ == "__main__":
     movie = Movie()
-    response = movie.movie_search("Harry Potter", {"num_results": 3})
-    mv_list = movie.movie_parse_response(response)
-    
+    # response = movie.movie_search("Harry Potter", {"num_results": 3})
+    # mv_list = movie.movie_parse_response(response)
 
-    # # Image.open(requests.get(mv_list[0]["poster_url"], stream=True).raw)
-    # response = requests.get(mv_list[0]["poster_url"])
-    # from io import BytesIO
-    # img = Image.open(BytesIO(response.content))
+    recom_pref = {"num_recom": 3, "genre": None}
+    recom_response = movie.movie_recom(recom_pref)
 
-    # movie.fetch_collection("671")
+    print(recom_response)
 
