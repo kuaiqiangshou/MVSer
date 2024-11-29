@@ -274,7 +274,7 @@ class Movie:
             response = requests.get(f"{api_url}/authentication", headers=headers)
 
             if response.status_code == 200:
-                print("Connection successful and API key is valid.")
+                # print("Connection successful and API key is valid.")
                 return True
             elif response.status_code == 401:
                 print("Invalid API key. Please check your API credentials.")
@@ -284,15 +284,3 @@ class Movie:
         except requests.exceptions.RequestException as e:
             print(f"Error connecting to API: {e}")
         return False
-
-
-if __name__ == "__main__":
-    movie = Movie()
-    # response = movie.movie_search("Harry Potter", {"num_results": 3})
-    # mv_list = movie.movie_parse_response(response)
-
-    recom_pref = {"num_recom": 3, "genre": None}
-    recom_response = movie.movie_recom(recom_pref)
-
-    print(recom_response)
-
