@@ -1,0 +1,27 @@
+{
+    "header": {
+        "accept": "application/json",
+        "Authorization": "Bearer "
+    },
+    "basic_url": "https://api.spotify.com/v1",
+    "track_search_endpoint": "/search",
+    "genre_recommendations_endpoint": "/recommendations",
+    "SPOTIFY_GENRES_ID_NAME": {
+        "pop": "Pop",
+        "rock": "Rock",
+        "classical": "Classical",
+        "jazz": "Jazz",
+        "hiphop": "Hip-Hop",
+        "country": "Country",
+        "electronic": "Electronic"
+    },
+    "SPOTIFY_GENRES_NAME_ID": {
+        "Pop": "pop",
+        "Rock": "rock",
+        "Classical": "classical",
+        "Jazz": "jazz",
+        "Hip-Hop": "hiphop",
+        "Country": "country",
+        "Electronic": "electronic"
+    }
+}
