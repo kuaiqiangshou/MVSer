@@ -4,15 +4,15 @@ class User:
         self.movie_name = None
 
     def user_input(self):
-        self.movie_name = "Harry Potter"
+        self.movie_name = "Frozen"
         self.preference = {
-            "num_results": 3,
+            "num_results": 1,
             "music_version": "clean",
             "movie_genre": None,
             "music_genre": None,
             "is_recom": {
                 "recom_type": "Both", 
-                "num_recom": 3,
+                "num_recom": 1,
                 "genre": None
                 }
         }
