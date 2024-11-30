@@ -1,50 +1,25 @@
 # music.py
 
 import os
-import requests
-import json
-from dotenv import load_dotenv
+from spotipy.oauth2 import SpotifyClientCredentials
+import spotipy
+
 
 class Music:
-    """Music module to call Spotify API."""
+    """Music class for handling Spotify API interactions."""
 
     def __init__(self):
-        """Initial function of Music class."""
-        self.name = None
+        """Initialize Spotify API client using environment variables."""
+        # Fetch Spotify credentials from the environment
+        client_id = os.environ.get("SPOTIFY_CLIENT_ID")
+        client_secret = os.environ.get("SPOTIFY_CLIENT_SECRET")
 
-        # Load Spotify API Key from environment variables
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        load_dotenv(os.path.join(dir_path, ".env"))
-        self.__SPOTIFY_API_KEY = os.getenv("SPOTIFY_API_KEY")
+        if not client_id or not client_secret:
+            raise ValueError("Spotify credentials not set. Use %env to set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET.")
 
-        if not self.__SPOTIFY_API_KEY:
-            raise ValueError("SPOTIFY_API_KEY is missing. Please set it in your .env file.")
-
-        # Load configuration file
-        with open(os.path.join(dir_path, "config.json"), "r") as file:
-            self.config = json.load(file)
-
-        self.url = self.config["basic_url"]
-        self.header = self.config["header"]
-        self.header["Authorization"] += self.__SPOTIFY_API_KEY
-
-        # Test API connection
-        self.test_api_connection()
-
-    def test_api_connection(self) -> bool:
-        """Test API connection and validate API key."""
-        try:
-            response = requests.get(f"{self.url}/browse/categories", headers=self.header)
-            if response.status_code == 200:
-                print("Spotify API connection successful.")
-                return True
-            elif response.status_code == 401:
-                raise ValueError("Invalid Spotify API key.")
-            else:
-                print(f"API connection failed with status code: {response.status_code}")
-        except requests.exceptions.RequestException as e:
-            print(f"Error connecting to Spotify API: {e}")
-        return False
+        # Initialize Spotipy client
+        auth_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
+        self.sp = spotipy.Spotify(auth_manager=auth_manager)
 
     def music_search(self, movie_name: str = None, user_preference: dict = {}) -> list:
         """
@@ -78,12 +53,9 @@ class Music:
             dict: The response dictionary from the Spotify API.
         """
         try:
-            endpoint = self.config["track_search_endpoint"]
-            query = f"{self.url}{endpoint}?q={movie_name.replace(' ', '%20')}+soundtrack&type=track&limit=10"
-            response = requests.get(query, headers=self.header)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
+            result = self.sp.search(q=f"{movie_name} soundtrack", type="album", limit=10)
+            return result
+        except Exception as e:
             print(f"Error fetching music data: {e}")
             return {}
 
@@ -95,7 +67,7 @@ class Music:
             recom_preference (dict): The user preferences dictionary.
 
         Returns:
-            list: A list of recommended music tracks.
+            list: A list of recommended music albums.
         """
         try:
             recom_response = self.fetch_recommendations(recom_preference)
@@ -119,22 +91,15 @@ class Music:
         """
         try:
             genre = recom_preference.get("genre", "pop")
-            endpoint = self.config["genre_recommendations_endpoint"]
-            params = {
-                "seed_genres": genre,
-                "limit": recom_preference.get("num_recom", 3)
-            }
-            query = f"{self.url}{endpoint}"
-            response = requests.get(query, headers=self.header, params=params)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
+            result = self.sp.search(q=genre, type="album", limit=recom_preference.get("num_recom", 3))
+            return result
+        except Exception as e:
             print(f"Error fetching recommendations: {e}")
             return {}
 
     def music_parse_response(self, music_response: dict, num_results: int = 3) -> list:
         """
-        Parse API response to extract music details.
+        Parse API response to extract relevant music information.
 
         Args:
             music_response (dict): The API response.
@@ -143,15 +108,15 @@ class Music:
         Returns:
             list: A list of dictionaries with music details.
         """
-        tracks = music_response.get("tracks", {}).get("items", [])
+        albums = music_response.get("albums", {}).get("items", [])
         music_results = []
-        for track in tracks[:num_results]:
-            track_info = {
-                "track_name": track.get("name"),
-                "artist": track["artists"][0]["name"],
-                "album": track.get("album", {}).get("name"),
-                "release_date": track.get("album", {}).get("release_date"),
-                "preview_url": track.get("preview_url", "No preview available.")
+        for album in albums[:num_results]:
+            album_info = {
+                "album_urls": album['external_urls']['spotify'],  # Spotify album URL
+                "img_url": album['images'][0]['url'] if album['images'] else None,  # Album cover image URL
+                "name": album['name'],  # Album name
+                "release_date": album.get('release_date', 'Unknown'),  # Release date of the album
+                "artists": ", ".join([artist['name'] for artist in album['artists']])  # Comma-separated list of artists
             }
-            music_results.append(track_info)
+            music_results.append(album_info)
         return music_results
