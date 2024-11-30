@@ -3,7 +3,17 @@ from io import BytesIO
 import requests
 from IPython.display import display
 from datetime import datetime
-import emoji
+
+PRINT_MOOD = ""
+try:
+    import emoji
+except ModuleNotFoundError:
+    print(
+        "Warning: module 'emoji' is not installed. For best visual experience"
+        ", please install emoji by run 'pip install emoji'. More detail, please"
+        " see https://pypi.org/project/emoji/"
+            )
+    PRINT_MOOD = "simple"
 
 from movie.movie import Movie
 from music_user.music import Music
@@ -263,7 +273,10 @@ class MVS(Movie, Music):
         else:
             nb_emo = min(len_content, 18)
 
-        line = f"{emoji.emojize(emo * nb_emo)}"
+        if PRINT_MOOD == "simple":
+            line = f"{'**' * nb_emo}"
+        else:
+            line = f"{emoji.emojize(emo * nb_emo)}"
 
         print(f"{line} {info} {line}")
         print()

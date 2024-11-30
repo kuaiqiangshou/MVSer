@@ -1,9 +1,16 @@
 # music.py
 
 import os
-from spotipy.oauth2 import SpotifyClientCredentials
-import spotipy
 
+try:
+    import spotipy
+    from spotipy.oauth2 import SpotifyClientCredentials
+except ModuleNotFoundError:
+    print(
+        "Warning: module 'spotipy' is not installed. To install, please run "
+        "'pip install spotipy'. For more detail, please see "
+        "https://github.com/spotipy-dev/spotipy"
+            )
 
 class Music:
     """Music class for handling Spotify API interactions."""
