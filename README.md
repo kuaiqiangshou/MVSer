@@ -59,13 +59,19 @@ Sub-package, `music_user` is used to search related music information from Spoif
 Belongs to `music_user.py` sub-package.
 
 **Main functions**:
-@Luna
+- `music_search`: Fetch music albums and extract useful information.
+- `fetch_music`: Call Spotify API to get raw album data.
+- `music_recom`: Fetch recommendations and extract useful information.
+- `fetch_recommendations`: Call Spotify API to get recommended albums.
+- `music_parse_response`: Extract information from the API response and wrap up results into a dictionary.
 
 ##### Module: User
 Belongs to `music_user.py` sub-package.
 
 **Main functions**:
-@Luna
+- `user_input`: Collect user preferences interactively through prompts.
+- `check_inputs`: Validate user preferences for correctness.
+- `display_preference`: Display the current user preferences.
 
 ## How to use
 
