@@ -82,8 +82,8 @@ To access [TMDB API](https://developer.themoviedb.org/reference/intro/getting-st
 ```bash
 # In console.
 export TMDB_API_KEY=<your_TMDB_API_token>
-export SPOTIPY_CLIENT_ID=<your_spotipy_client_id>
-export SPOTIPY_CLIENT_SECRET=<your_spotify_client_secert>
+export SPOTIFY_CLIENT_ID=<your_spotipy_client_id>
+export SPOTIFY_CLIENT_SECRET=<your_spotify_client_secert>
 ```
 
 2. Run MVSer
