@@ -2,7 +2,6 @@ from PIL import Image
 from io import BytesIO
 import requests
 from IPython.display import display
-from termcolor import colored
 from datetime import datetime
 import emoji
 
@@ -104,9 +103,10 @@ class MVS(Movie, Music):
         """
 
         # Display title.
-        print(emoji.emojize(":bright_button:"), " ", \
-              colored(movie_info["original_title"], "green")
-                )
+        self.decoration(
+            emo=":bright_button:", info=movie_info["original_title"], 
+            mode="title"
+            )
 
         # Display poster.
         if movie_info["poster_url"]:
@@ -148,9 +148,9 @@ class MVS(Movie, Music):
                 results. Defaults to {}.
         """
         # Display title.
-        print(emoji.emojize(":bright_button:"), " ", \
-              colored(music_info["name"], "green")
-                )
+        self.decoration(
+            emo=":bright_button:", info=music_info["name"], mode="title"
+            )
 
         # Display poster.
         if music_info["img_url"]:
@@ -181,12 +181,27 @@ class MVS(Movie, Music):
         user = User()
         user.user_input()
 
+        # Display user preference.
+        self.decoration(
+                    emo=":star:",
+                    info=f"User Preference"
+                    )
+        user.display_preference()
+        print()
+
         # Get preference
         self.preference = user.preference
         user_mv_name_query = user.movie_name
 
         # Get movie results.
-        movie_results = self.return_movie_results(user_mv_name_query, self.preference)
+        movie_results = self.return_movie_results(
+            user_mv_name_query, self.preference
+            )
+        if not movie_results:
+            self.decoration(
+                emo=":loudly_crying_face:", 
+                info=f"Sorry, there is no matched movie!"
+                )
 
         # Get related music results.
         music_results_dic = {}
@@ -203,6 +218,11 @@ class MVS(Movie, Music):
         """Display results"""
         # Display movie results.
         for name, movie_details in movie_results.items():
+            self.decoration(
+                emo=":movie_camera:",
+                info=f"Movie Details for {name}"
+                )
+            	
             self.display_movie_details(movie_details)
             
             self.decoration(
@@ -229,7 +249,7 @@ class MVS(Movie, Music):
                 for item in mu_recom_results:
                     self.display_music_details(item)
 
-    def decoration(self, emo: str="", info: str="") -> None:
+    def decoration(self, emo: str="", info: str="", mode: str="") -> None:
         """Pretty print function
 
         Args:
@@ -238,9 +258,12 @@ class MVS(Movie, Music):
 
         len_content = len(info)
 
-        nb_emo = len_content * 2
+        if mode == "title":
+            nb_emo = 1
+        else:
+            nb_emo = min(len_content, 18)
 
         line = f"{emoji.emojize(emo * nb_emo)}"
-        len_side = (nb_emo - len_content - 4) // 2
 
-        print(f"{line[:len_side]} {info} {line[:len_side]}")
+        print(f"{line} {info} {line}")
+        print()

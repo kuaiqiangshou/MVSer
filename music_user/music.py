@@ -90,7 +90,12 @@ class Music:
             dict: The response dictionary from the Spotify API.
         """
         try:
-            genre = recom_preference.get("genre", "pop")
+            # genre = recom_preference.get("genre", "pop")
+            if not recom_preference["genre"]:
+                genre = "pop"
+            else:
+                genre = recom_preference["genre"]
+                
             result = self.sp.search(q=genre, type="album", limit=recom_preference.get("num_recom", 3))
             return result
         except Exception as e:

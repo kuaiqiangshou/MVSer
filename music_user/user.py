@@ -18,7 +18,7 @@ class User:
             "is_recom": {
                 "recom_type": "Both", 
                 "num_recom": 3,
-                "genre": None
+                "genre": "pop"
             }
         }
 
@@ -55,7 +55,7 @@ class User:
 
         # Recommendation Genre
         self.preference["is_recom"]["genre"] = input(
-            "Enter genre for recommendations (e.g., Pop, Rock, default: None): "
+            "Enter genre for recommendations (e.g., Pop, Rock, default: pop): "
         ) or None
 
         print("User preferences updated successfully!")

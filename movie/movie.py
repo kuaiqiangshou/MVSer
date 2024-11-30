@@ -167,7 +167,7 @@ class Movie:
 
                     if movie_info["poster_path"]:
                         movie_info["poster_url"] = \
-                            f"https://image.tmdb.org/t/p/w154{\
+                            f"https://image.tmdb.org/t/p/w500{\
                                 movie_info["poster_path"]}"
 
                     if movie_info["backdrop_path"]:
@@ -200,7 +200,7 @@ class Movie:
                                     ]
                             if movie_info["collection_poster_path"]:
                                 movie_info["collection_poster_url"] = \
-                                    f"https://image.tmdb.org/t/p/w154{\
+                                    f"https://image.tmdb.org/t/p/w500{\
                                         movie_info["collection_poster_path"]}"
                         
                     movie_info["homepage"] = collection_response["homepage"]
