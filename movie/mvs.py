@@ -22,7 +22,7 @@ class MVS(Movie, Music):
 
     def return_movie_results(
             self, movie_name: str="", user_preference: str=None, *args, **kwargs
-            ) -> list:
+            ) -> dict:
         """Search movie information
 
         Args:
@@ -31,14 +31,18 @@ class MVS(Movie, Music):
             Defaults to None.
 
         Returns:
-            list: A list of movies details.
+            dict: A dictionary of movies details, which keys are movie names 
+                and values are the movie details.
         """
         
         # Search movie information.
-        mo_results = self.movie.movie_search(
+        mo_infos = self.movie.movie_search(
             movie_name, user_preference, *args, **kwargs
             )
         
+        mo_results = {}
+        for item in mo_infos:
+            mo_results[item["original_title"]] = item
         return mo_results
 
     def return_music_results(
@@ -143,9 +147,32 @@ class MVS(Movie, Music):
             music_info (dict[str, any]): The API response from music search 
                 results. Defaults to {}.
         """
-        print("--------- MUSIC ---------")
+        # Display title.
+        print(emoji.emojize(":bright_button:"), " ", \
+              colored(music_info["name"], "green")
+                )
+
+        # Display poster.
+        if music_info["img_url"]:
+            img_reponse = requests.get(music_info["img_url"])
+            img = Image.open(BytesIO(img_reponse.content))
+            display(img)
+
+        if music_info["album_urls"]:
+            print(f"Album: {music_info["album_urls"]}")
+        else:
+            print(f"Album: Sorry there is no available link. -.-")
+
+        if music_info["artists"]:
+            print(f"Artists: {music_info["artists"]}")
+
+        if music_info["release_date"]:
+            print(f"Release Date: {music_info["release_date"]}")
+        else:
+            print(f"Release Date: Unknown.")
+
+        # For pretty print.
         print()
-        pass
 
     def start(self) -> None:
         """Start function for MVSer package.
@@ -156,12 +183,18 @@ class MVS(Movie, Music):
 
         # Get preference
         self.preference = user.preference
-        movie_name = user.movie_name
+        user_mv_name_query = user.movie_name
 
-        movie_results = self.return_movie_results(movie_name, self.preference)
-        music_results = self.return_music_results(movie_name, self.preference)
+        # Get movie results.
+        movie_results = self.return_movie_results(user_mv_name_query, self.preference)
 
-        # If user wants recommendation, return it.
+        # Get related music results.
+        music_results_dic = {}
+        for name, _ in movie_results.items():
+            music_results = self.return_music_results(name, self.preference)
+            music_results_dic[name] = music_results
+
+        # Recommendations.
         if self.preference["is_recom"]:
             mv_recom_results, mu_recom_results = self.return_recom(
                 self.preference["is_recom"]
@@ -169,28 +202,45 @@ class MVS(Movie, Music):
 
         """Display results"""
         # Display movie results.
-        for item in movie_results:
-            self.display_movie_details(item)
+        for name, movie_details in movie_results.items():
+            self.display_movie_details(movie_details)
+            
+            self.decoration(
+                emo=":musical_notes:",
+                info=f"Music Album in {name}"
+                )
+            for music_res in music_results_dic[name]:
+                self.display_music_details(music_res)
         
-        self.decoration(
-            f"Movies You May Like For {datetime.today().strftime('%Y-%m-%d')}"
-            )
         if self.preference["is_recom"]:
-            for item in mv_recom_results:
-                self.display_movie_details(item)
+            if mv_recom_results:
+                self.decoration(
+                    emo=":star:",
+                    info=f"Movies You May Like For {datetime.today().strftime('%Y-%m-%d')}"
+                    )
+                for item in mv_recom_results:
+                    self.display_movie_details(item)
+            
+            if mu_recom_results:
+                self.decoration(
+                    emo=":star:",
+                    info=f"Music You May Like"
+                    )
+                for item in mu_recom_results:
+                    self.display_music_details(item)
 
-    def decoration(self, info: str="") -> None:
+    def decoration(self, emo: str="", info: str="") -> None:
         """Pretty print function
 
         Args:
             info (str, optional): The printing string. Defaults to "".
         """
 
-        emo = ":star:"
         len_content = len(info)
 
         nb_emo = len_content * 2
-        line = f"{emoji.emojize(emo*nb_emo)}"
+
+        line = f"{emoji.emojize(emo * nb_emo)}"
         len_side = (nb_emo - len_content - 4) // 2
 
         print(f"{line[:len_side]} {info} {line[:len_side]}")
