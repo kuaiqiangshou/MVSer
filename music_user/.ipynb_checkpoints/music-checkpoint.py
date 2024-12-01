@@ -1,9 +1,16 @@
 # music.py
 
 import os
-from spotipy.oauth2 import SpotifyClientCredentials
-import spotipy
 
+try:
+    import spotipy
+    from spotipy.oauth2 import SpotifyClientCredentials
+except ModuleNotFoundError:
+    print(
+        "Warning: module 'spotipy' is not installed. To install, please run "
+        "'pip install spotipy'. For more detail, please see "
+        "https://github.com/spotipy-dev/spotipy"
+            )
 
 class Music:
     """Music class for handling Spotify API interactions."""
@@ -90,7 +97,12 @@ class Music:
             dict: The response dictionary from the Spotify API.
         """
         try:
-            genre = recom_preference.get("genre", "pop")
+            # genre = recom_preference.get("genre", "pop")
+            if not recom_preference["genre"]:
+                genre = "pop"
+            else:
+                genre = recom_preference["genre"]
+                
             result = self.sp.search(q=genre, type="album", limit=recom_preference.get("num_recom", 3))
             return result
         except Exception as e:
