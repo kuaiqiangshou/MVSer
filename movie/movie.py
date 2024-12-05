@@ -26,8 +26,13 @@ class Movie:
         self.header["Authorization"] += self.__TMDB_API_KEY
 
         # Test api connection.
-        self.test_api_connection(self.url, self.__TMDB_API_KEY)
+        if not self.test_api_connection(self.url, self.__TMDB_API_KEY):
+            raise ConnectionError()
 
+    @property
+    def get_TMDB_key(self):
+        return self.__TMDB_API_KEY
+    
     def movie_search(
             self, movie_name:str=None, user_preference:dict={}) -> list:
         """Search movie inforamtion from TMDB by calling API using user input.
@@ -40,16 +45,25 @@ class Movie:
         Returns:
             list: A list of movies information related to user input.
         """
+
+        assert (
+            movie_name and type(movie_name) == str
+            ), "Please provide a valid movie name."
+
         mv_basic_response = self.fetch_movie(movie_name)
+
+        num_results = user_preference.get("num_results", 3)
+        movie_genre = user_preference.get("movie_genre", None)
+
         movies = self.movie_parse_response(
             movie_response=mv_basic_response,
-            num_results=user_preference["num_results"],
-            genre_preference=user_preference["movie_genre"]
+            num_results=num_results,
+            genre_preference=movie_genre
             )
 
         return movies
 
-    def fetch_movie(self, movie_name:str=None) -> dict[str:any]:
+    def fetch_movie(self, movie_name:str="") -> dict[str:any]:
         """Fetch basic movie information.
 
         Returns:
@@ -63,12 +77,12 @@ class Movie:
             # Remove blank space and replace them to %20.
             movie_name = movie_name.replace(" ", "%20")
 
-            query = f"{self.url}{endpoint}?query={movie_name}\
-                &language=en-US&page=1"
-            mv_basic_response = requests.get(query, headers=self.header)
+            self.search_query = f"{self.url}{endpoint}?query={movie_name}"\
+                "&language=en-US&page=1"
+            mv_basic_response = requests.get(
+                self.search_query, headers=self.header)
 
             if mv_basic_response.status_code == 200:
-                # print("Data fetched successfully!")
                 mv_basic_response = mv_basic_response.json()
                 return mv_basic_response
             else:
@@ -76,7 +90,7 @@ class Movie:
                     f"Failed to fetch data. HTTP status code: \
                         {mv_basic_response.status_code}"
                     )
-                print("Response:", mv_basic_response.json())
+                print(f"Response: {mv_basic_response.json()}")
         except requests.exceptions.RequestException as e:
             print(f"Error during API request: {e}")
         return None
@@ -96,8 +110,9 @@ class Movie:
             endpoint = self.config["collection_endpoint"] \
                 .replace("MOVIE_ID", str(id))
 
-            query = f"{self.url}{endpoint}"
-            mv_col_response = requests.get(query, headers=self.header)
+            self.collection_query = f"{self.url}{endpoint}"
+            mv_col_response = requests.get(
+                self.collection_query, headers=self.header)
 
             if mv_col_response.status_code == 200:
                 # print("Data fetched successfully!")
