@@ -4,15 +4,9 @@ from unittest import mock
 import unittest.mock
 
 from movie.movie import Movie
-
-class MockResponse:
-    def __init__(self, json_data, status_code):
-        self.json_data = json_data
-        self.status_code = status_code
-
-    def json(self):
-        return self.json_data
-            
+from movie.exceptions import APICallError
+from test.helper import *
+    
 @unittest.mock.patch.dict(os.environ, {"TMDB_API_KEY": "abc"})
 class TestMovie(unittest.TestCase):   
 
@@ -68,19 +62,13 @@ class TestMovie(unittest.TestCase):
 
         self.assertEqual(movie.movie_search("abc", {}), ["a", "b"])
 
-    def mocked_requests_get_200(*args, **kwargs):
-        return MockResponse({"key1": "value1"}, 200)
-    
-    def mocked_requests_get_else(*args, **kwargs):
-        return MockResponse(None, 401)
-
     @unittest.mock.patch("requests.get", side_effect=mocked_requests_get_200)
-    def test_fetch_movie(self, mock_get):
+    def test_fetch_movie_200(self, mock_get):
         with unittest.mock.patch.object(
             Movie, "test_api_connection", return_value=True):
             movie = Movie()
 
-        movie_name1 = "harry potter"
+        movie_name = "harry potter"
         movie.fetch_movie(movie_name=movie_name)
         self.assertEqual(
             movie.search_query,
@@ -88,20 +76,45 @@ class TestMovie(unittest.TestCase):
                 "language=en-US&page=1"
             )
 
-        response = movie.fetch_movie(movie_name1)
+        response = movie.fetch_movie(movie_name)
         self.assertIsInstance(response, dict)
 
     @unittest.mock.patch("requests.get", side_effect=mocked_requests_get_else)
-    def test_fetch_movie(self, mock_get):
+    def test_fetch_movie_else(self, mock_get):
         with unittest.mock.patch.object(
             Movie, "test_api_connection", return_value=True):
             movie = Movie()
 
         movie_name = "abc"
-        movie.fetch_movie(movie_name=movie_name)
-        response = movie.fetch_movie(movie_name)
-        self.assertIsInstance(response, dict)
-        
+        response = movie.fetch_movie(movie_name=movie_name)
+        self.assertEqual(response, None)
+
+    @unittest.mock.patch(
+            "requests.get",
+            side_effect=mocked_resquests_get_request_exception
+            )
+    def test_fetch_movie_request_exception(self, mock_get):
+        with unittest.mock.patch.object(
+            Movie, "test_api_connection", return_value=True):
+            movie = Movie()
+
+        movie_name = "abc"
+        response = movie.fetch_movie(movie_name=movie_name)
+        self.assertEqual(response, None)    
+
+    @unittest.mock.patch(
+            "requests.get",
+            side_effect=mocked_resquests_get_exception
+            )
+    def test_fetch_movie_exception(self, mock_get):
+        with unittest.mock.patch.object(
+            Movie, "test_api_connection", return_value=True):
+            movie = Movie()
+
+        movie_name = "abc"
+        response = movie.fetch_movie(movie_name=movie_name)
+        self.assertEqual(response, None)   
+
 
     # def test_fetch_collection(self):
     #     pass

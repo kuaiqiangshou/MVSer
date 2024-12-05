@@ -3,6 +3,7 @@ import requests
 import json
 import os 
 
+from movie.exceptions import APICallError
 class Movie:
     """Movie module to call TMDB API.
     """
@@ -86,12 +87,12 @@ class Movie:
                 mv_basic_response = mv_basic_response.json()
                 return mv_basic_response
             else:
-                print(
-                    f"Failed to fetch data. HTTP status code: \
-                        {mv_basic_response.status_code}"
-                    )
-                print(f"Response: {mv_basic_response.json()}")
+                raise APICallError(mv_basic_response.status_code)
         except requests.exceptions.RequestException as e:
+            print(f"Error during API request: {e}")
+        except APICallError as e:
+            print(f"Error during API request: {e}")
+        except Exception as e:
             print(f"Error during API request: {e}")
         return None
 
@@ -115,10 +116,8 @@ class Movie:
                 self.collection_query, headers=self.header)
 
             if mv_col_response.status_code == 200:
-                # print("Data fetched successfully!")
                 mv_col_response = mv_col_response.json()
                 return mv_col_response
-                
             else:
                 print(
                     f"Failed to fetch data. HTTP status code: \
