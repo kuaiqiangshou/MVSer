@@ -2,8 +2,10 @@ import os
 import requests
 import json
 import os 
+import warnings
 
-from movie.exceptions import APICallError
+from movie.exceptions import \
+    APICallError, MovieIDEmptyError
 class Movie:
     """Movie module to call TMDB API.
     """
@@ -47,10 +49,12 @@ class Movie:
             list: A list of movies information related to user input.
         """
 
-        assert (
-            movie_name and type(movie_name) == str
-            ), "Please provide a valid movie name."
-
+        if not movie_name:
+            warnings.warn("There is no vaild movie name, "\
+                            "will return default 'Harry Potter' results."
+                            )
+            movie_name = "Harry Potter"
+            
         mv_basic_response = self.fetch_movie(movie_name)
 
         num_results = user_preference.get("num_results", 3)
@@ -108,6 +112,9 @@ class Movie:
 
         try:
             # Make a GET request
+            if not id:
+                raise MovieIDEmptyError
+            
             endpoint = self.config["collection_endpoint"] \
                 .replace("MOVIE_ID", str(id))
 
@@ -119,13 +126,17 @@ class Movie:
                 mv_col_response = mv_col_response.json()
                 return mv_col_response
             else:
-                print(
-                    f"Failed to fetch data. HTTP status code: \
-                        {mv_col_response.status_code}"
-                    )
-                print("Response:", mv_col_response.json())
+                raise APICallError(mv_col_response.status_code)
         except requests.exceptions.RequestException as e:
             print(f"Error during API request: {e}")
+        except APICallError as e:
+            print(f"Error during API request: {e}")
+        except Exception as e:
+            print(f"Error during API request: {e}")
+        except MovieIDEmptyError:
+            warnings.warn("There is no vaild movie ID, skip return "\
+                              "collection information.")
+
         return None
 
     def movie_parse_response(

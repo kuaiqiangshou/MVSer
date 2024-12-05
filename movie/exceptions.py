@@ -1,3 +1,4 @@
+import warnings
 
 class APICallError(Exception):
     def __init__(self, status_code, *args):
@@ -10,3 +11,9 @@ class APICallError(Exception):
             "{self.status_code}."
             )
         )
+
+class MovieIDEmptyError(Exception):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+      
