@@ -4,7 +4,6 @@ from unittest import mock
 import unittest.mock
 
 from movie.movie import Movie
-from movie.exceptions import APICallError
 from test.helper import *
     
 class TestMovie(unittest.TestCase):   

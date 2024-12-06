@@ -3,12 +3,13 @@ from io import BytesIO
 import requests
 from IPython.display import display
 from datetime import datetime
+import warnings
 
 PRINT_MOOD = ""
 try:
     import emoji
 except ModuleNotFoundError:
-    print(
+    warnings.warn(
         "Warning: module 'emoji' is not installed. For best visual experience"
         ", please install emoji by run 'pip install emoji'. More detail, please"
         " see https://pypi.org/project/emoji/"
@@ -30,7 +31,7 @@ class MVS(Movie, Music):
         self.preference = None
 
     def return_movie_results(
-            self, movie_name: str="", user_preference: str=None, *args, **kwargs
+            self, movie_name: str="", user_preference: str={}, *args, **kwargs
             ) -> dict:
         """Search movie information
 
@@ -51,11 +52,12 @@ class MVS(Movie, Music):
         
         mo_results = {}
         for item in mo_infos:
-            mo_results[item["original_title"]] = item
+            if item.get("original_title", None):
+                mo_results[item["original_title"]] = item
         return mo_results
 
     def return_music_results(
-            self, movie_name: str="", user_preference: str=None, *args, **kwargs
+            self, movie_name: str="", user_preference: str={}, *args, **kwargs
             ) -> list:
         """Search relavant music results.
 
@@ -90,11 +92,18 @@ class MVS(Movie, Music):
         mo_recom_results = None
         mu_recom_results = None
 
-        if recom_preference["recom_type"] == "movie":
+        if not recom_preference or not isinstance(recom_preference, dict):
+            recom_preference = {
+                "recom_type": "both",
+                "num_recom": 3,
+                "genre": None,
+            }
+
+        if recom_preference.get("recom_type", None) == "movie":
             # return movie recommandations.
             mo_recom_results = self.movie.movie_recom(recom_preference)
             return mo_recom_results, []
-        elif recom_preference["recom_type"] == "music":
+        elif recom_preference.get("recom_type", None) == "music":
             # return music recommandations.
             mu_recom_results = self.music.music_recom(recom_preference)
             return [], mu_recom_results

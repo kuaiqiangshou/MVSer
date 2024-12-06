@@ -42,7 +42,7 @@ class Movie:
         return self.__TMDB_API_KEY
     
     def movie_search(
-            self, movie_name:str=None, user_preference:dict={}) -> list:
+            self, movie_name:str="", user_preference:dict={}) -> list:
         """Search movie inforamtion from TMDB by calling API using user input.
 
         Args:
@@ -63,6 +63,9 @@ class Movie:
             
         mv_basic_response = self.fetch_movie(movie_name)
 
+        if not user_preference or not isinstance(user_preference, dict):
+            user_preference = {}
+            
         num_results = user_preference.get("num_results", 3)
         movie_genre = user_preference.get("movie_genre", None)
 
