@@ -67,7 +67,7 @@ class Movie:
             user_preference = {}
             
         num_results = user_preference.get("num_results", 3)
-        movie_genre = user_preference.get("movie_genre", None)
+        movie_genre = user_preference.get("movie_genre", "")
 
         movies = self.movie_parse_response(
             movie_response=mv_basic_response,
@@ -150,7 +150,7 @@ class Movie:
 
     def movie_parse_response(
             self, movie_response:dict={}, num_results:int=3, 
-            genre_preference:list=None, is_recom:bool=False, 
+            genre_preference:str="", is_recom:bool=False, 
         ) -> list:
         """Parse API response.
 
@@ -158,8 +158,8 @@ class Movie:
             movie_response (dict): The response from API call.
             num_results (int, optional): The number of results to return. 
                 Defaults to 3.
-            genre_preference (list, optional): The user preference for genre. 
-                Defaults to None.
+            genre_preference (str, optional): The user preference for genre. 
+                Defaults to "".
             is_recom (bool, optional): A indicator whether parsing the 
                 recommandation response or not. We only provide collection 
                 information for non-recommand movies. Defaults to False.
@@ -175,6 +175,8 @@ class Movie:
             results = movie_response["results"]
 
             # Covert genre name to genre id.
+            if not isinstance(genre_preference, str):
+                genre_preference = ""
             genre_id = self.config["MOVIE_GENRES_NAME_NUMBER"].get(
                 genre_preference.lower(), None)
 

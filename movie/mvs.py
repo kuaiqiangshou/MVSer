@@ -256,7 +256,7 @@ class MVS(Movie, Music):
             if mv_recom_results:
                 self.decoration(
                     emo=":star:",
-                    info=f"Movies You May Like For {
+                    info=f"Movies You May Like on {
                         datetime.today().strftime('%Y-%m-%d')}"
                     )
                 for item in mv_recom_results:
