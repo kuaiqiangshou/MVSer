@@ -166,18 +166,23 @@ class Movie:
         """
         movies = []
         count = 0
+
         if movie_response:
             results = movie_response["results"]
+
+            # Covert genre name to genre id.
+            genre_id = self.config["MOVIE_GENRES_NAME_NUMBER"].get(
+                genre_preference.lower(), None)
+
             for res in results:
                 if (count >= num_results) or \
                     (
-                        genre_preference is not None and \
-                            genre_preference not in res["genre_ids"]
+                        genre_id and genre_id not in res["genre_ids"]
                     ):
                     continue
                 else:
                     movie_info = {}
-                    movie_info["id"] = res.get("id", None)
+                    movie_info["id"] = str(res.get("id", ""))
                     movie_info["original_language"] = res.get(
                         "original_language", None
                         )
@@ -193,16 +198,17 @@ class Movie:
                         )
                     movie_info["poster_path"] = res.get("poster_path", None)
                     movie_info["genre_ids"] = res.get("genre_ids", [])
-                    movie_info["collection"] = None
+                    if not isinstance(movie_info["genre_ids"], list):
+                        movie_info["genre_ids"] = [movie_info["genre_ids"]]
 
                     if movie_info["poster_path"]:
                         movie_info["poster_url"] = \
-                            f"https://image.tmdb.org/t/p/w500{\
+                            f"{self.config["poster_url"]}{\
                                 movie_info["poster_path"]}"
 
                     if movie_info["backdrop_path"]:
                         movie_info["backdrop_url"] = \
-                            f"https://image.tmdb.org/t/p/w500{\
+                            f"{self.config["poster_url"]}{\
                                 movie_info["backdrop_path"]}"
                         
                     if movie_info["genre_ids"]:
@@ -219,26 +225,33 @@ class Movie:
                     collection_response = self.fetch_collection(
                         movie_info["id"]
                         )
-                    if not is_recom:
-                        if collection_response["belongs_to_collection"]:
+                    if not is_recom and collection_response:
+                        if collection_response.get("belongs_to_collection", []):
                             movie_info["collection"] = collection_response[
                                 "belongs_to_collection"
-                                ]["name"]
+                                ].get("name", "")
                             movie_info["collection_poster_path"] = \
-                                collection_response["belongs_to_collection"][
-                                    "poster_path"
-                                    ]
+                                collection_response[
+                                    "belongs_to_collection"
+                                    ].get("poster_path", "")
                             if movie_info["collection_poster_path"]:
                                 movie_info["collection_poster_url"] = \
-                                    f"https://image.tmdb.org/t/p/w500{\
-                                        movie_info["collection_poster_path"]}"
-                        
-                    movie_info["homepage"] = collection_response["homepage"]
+                                    f"{self.config["poster_url"]}"\
+                                f"{movie_info["collection_poster_path"]}"
+                        else:
+                            print("Sorry :(, couldn't find related collection"\
+                                  " for this movie!")
+                                
+                    if collection_response:
+                        movie_info["homepage"] = collection_response.get(
+                            "homepage", "")
+                    else:
+                        movie_info["homepage"] = ""
 
                     movies.append(movie_info) 
                     count += 1  
         else:
-            print("Sorry, Couldn't find the movie.")
+            print("Sorry, Couldn't find the movie :(")
         return movies[:num_results]
 
     def movie_recom(self, recom_preference: dict[str, any]) -> list:

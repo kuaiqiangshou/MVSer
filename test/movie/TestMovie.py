@@ -11,6 +11,7 @@ class TestMovie(unittest.TestCase):
 
     @unittest.mock.patch.dict(os.environ, {"TMDB_API_KEY": "abc"})
     def setUp(self):
+        self.maxDiff = None
         with unittest.mock.patch.object(
             Movie, "test_api_connection", return_value=True
             ):
@@ -18,7 +19,7 @@ class TestMovie(unittest.TestCase):
         
     
     """Test init function."""
-    def test_init_true(self):
+    def test_init_success(self):
         self.assertEqual(self.movie.get_TMDB_key, "abc")
 
         self.assertIsNotNone(self.movie.config)
@@ -34,6 +35,10 @@ class TestMovie(unittest.TestCase):
             self.movie.config["recommendation_endpoint"],
             "/trending/movie/day?language=en-US"
             )
+        self.assertEqual(
+            self.movie.config["poster_url"],
+            "https://image.tmdb.org/t/p/w500"
+        )
         self.assertEqual(self.movie.url, "https://api.themoviedb.org/3")
 
         self.assertDictEqual(
@@ -156,10 +161,128 @@ class TestMovie(unittest.TestCase):
             response = self.movie.fetch_collection(id="123")
             self.assertEqual(response, None) 
 
-    # """Test movie_parse_response function."""
-    # def test_movie_parse_response_empty(self, mock_test_api_connection):
-    #     movie = Movie()
+    """Test movie_parse_response function."""
+    def test_movie_parse_response(self):
 
+        response = {
+            "results": [
+                {
+                    "id": 123,
+                    "original_language": "language_abc",
+                    "original_title": "title_abc",
+                    "overview": "overview_abc",
+                    "release_date": "2024",
+                    "backdrop_path": "/abc/abc",
+                    "poster_path": "/abc/dfg",
+                    "genre_ids": "28",
+                }
+            ],
+        }
+        
+        # Test movie search scenario.
+        with unittest.mock.patch.object(Movie,
+            "fetch_collection", return_value = {
+                "belongs_to_collection": {
+                    "name": "abc",
+                    "poster_path": "/collect/abc",
+                },
+                "homepage": "homepage"
+            }
+            ):
+            result = self.movie.movie_parse_response(
+                movie_response=response,
+                num_results=1,
+                genre_preference="Action",
+                is_recom=False
+                )
+            
+            self.assertIsInstance(result, list)
+            self.assertEqual(len(result), 1)
+            self.assertDictEqual(
+                result[0], 
+                {
+                    "id": "123",
+                    "original_language": "language_abc",
+                    "original_title": "title_abc",
+                    "overview": "overview_abc",
+                    "release_date": "2024",
+                    "backdrop_path": "/abc/abc",
+                    "backdrop_url": "https://image.tmdb.org/t/p/w500/abc/abc",
+                    "poster_path": "/abc/dfg",
+                    "poster_url": "https://image.tmdb.org/t/p/w500/abc/dfg",
+                    "genre_ids": ["28"],
+                    "genre_names": ["Action"],
+                    "collection": "abc",
+                    "collection_poster_path": "/collect/abc",
+                    "collection_poster_url": "https://image.tmdb.org/t/p/w500/collect/abc",
+                    "homepage": "homepage"
+                }
+            )
+
+        with unittest.mock.patch.object(Movie,
+            "fetch_collection", return_value = {
+                "belongs_to_collection": {
+                    "name": "abc",
+                    "poster_path": "/collect/abc",
+                },
+                "homepage": "homepage"
+            }
+            ):
+            result = self.movie.movie_parse_response(
+                movie_response=response,
+                num_results=1,
+                genre_preference="comedy",
+                is_recom=False
+                )
+            
+            self.assertIsInstance(result, list)
+            self.assertEqual(len(result), 0)
+
+        # Test recommendation scenario.
+        with unittest.mock.patch.object(Movie,
+            "fetch_collection", return_value = {
+                "belongs_to_collection": {
+                    "name": "abc",
+                    "poster_path": "/collect/abc",
+                },
+                "homepage": "homepage"
+            }
+            ):
+            result = self.movie.movie_parse_response(
+                    movie_response=response,
+                    num_results=1,
+                    genre_preference="Action",
+                    is_recom=True
+                    )
+            self.assertIsInstance(result, list)
+            self.assertEqual(len(result), 1)
+            self.assertDictEqual(
+                result[0], 
+                {
+                    "id": "123",
+                    "original_language": "language_abc",
+                    "original_title": "title_abc",
+                    "overview": "overview_abc",
+                    "release_date": "2024",
+                    "backdrop_path": "/abc/abc",
+                    "backdrop_url": "https://image.tmdb.org/t/p/w500/abc/abc",
+                    "poster_path": "/abc/dfg",
+                    "poster_url": "https://image.tmdb.org/t/p/w500/abc/dfg",
+                    "genre_ids": ["28"],
+                    "genre_names": ["Action"],
+                    "homepage": "homepage"
+                }
+            )
+        
+        # Test no response scenario.
+        result = self.movie.movie_parse_response(
+                    movie_response=None,
+                    num_results=1,
+                    genre_preference="",
+                    is_recom=True
+                    )
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 0)
 
     # def test_movie_recom(self):
     #     pass
