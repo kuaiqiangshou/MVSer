@@ -381,9 +381,6 @@ class TestMovie(unittest.TestCase):
             response = self.movie.test_api_connection(url, api_key)
             self.assertEqual(response, False)  
 
-
-
-
-if __name__ == "__main__":
-    # run with python -m unittest ./test/movie/TestMovie.py
-    unittest.main()
+# if __name__ == "__main__":
+#     # run with python -m unittest ./test/movie/TestMovie.py
+#     unittest.main()

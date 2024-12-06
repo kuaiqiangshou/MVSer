@@ -283,6 +283,6 @@ class TestMVS(unittest.TestCase):
             f"{'**' * nb_star} aaaaaaaaaaaaaaaaaaaaa {'**' * nb_star}\n")
       
         
-if __name__ == "__main__":
-    # run with python -m unittest ./test/movie/TestMVS.py
-    unittest.main(argv =[''], verbosity=2, exit=False)
+# if __name__ == "__main__":
+#     # run with python -m unittest ./test/movie/TestMVS.py
+#     unittest.main(argv =[''], verbosity=2, exit=False)

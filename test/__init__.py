@@ -1,4 +1,4 @@
 # __init__.py
 
-from .movie.TestMovie import TestMovie
-from .movie.TestMVS import TestMVS
+from test.movie.TestMovie import TestMovie
+from test.movie.TestMVS import TestMVS
