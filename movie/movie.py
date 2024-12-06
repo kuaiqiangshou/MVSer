@@ -284,21 +284,20 @@ class Movie:
             # Make a GET request
             endpoint = self.config["recommendation_endpoint"]
 
-            query = f"{self.url}{endpoint}"
-            mv_recom_response = requests.get(query, headers=self.header)
+            self.recom_query = f"{self.url}{endpoint}"
+            mv_recom_response = requests.get(
+                self.recom_query, headers=self.header)
 
             if mv_recom_response.status_code == 200:
-                # print("Data fetched successfully!")
                 mv_recom_response = mv_recom_response.json()
                 return mv_recom_response
-                
             else:
-                print(
-                    f"Failed to fetch data. HTTP status code: \
-                        {mv_recom_response.status_code}"
-                    )
-                print("Response:", mv_recom_response.json())
+                raise APICallError(mv_recom_response.status_code)
         except requests.exceptions.RequestException as e:
+            print(f"Error during API request: {e}")
+        except APICallError as e:
+            print(f"Error during API request: {e}")
+        except Exception as e:
             print(f"Error during API request: {e}")
         return None
 

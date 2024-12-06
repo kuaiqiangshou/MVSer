@@ -304,13 +304,47 @@ class TestMovie(unittest.TestCase):
         self.assertEqual(results, ["a", "b", "c"])
 
     """Test fetch_recom function."""
-    # def test_fetch_recom(self):
-    #     pass
+    def fetch_recom_success(self):
+        with unittest.mock.patch(
+            "requests.get", side_effect=mocked_requests_get_200
+            ):
+            response = self.movie.fetch_recom()
+            self.assertEqual(
+                self.movie.recom_query,
+                "https://api.themoviedb.org/3/trending/movie/day?language=en-US"
+                )
 
+            self.assertIsInstance(response, dict)
+
+    def fetch_recom_fail(self):
+        # Other status_code. 
+        with unittest.mock.patch(
+            "requests.get", side_effect=mocked_requests_get_else
+            ):
+            response = self.movie.fetch_recom()
+            self.assertEqual(response, None)
+        
+        # Request error.
+        with unittest.mock.patch(
+            "requests.get",
+            side_effect=mocked_resquests_get_request_exception
+            ):
+            response = self.movie.fetch_recom()
+            self.assertEqual(response, None)
+ 
+        # Other error.
+        with unittest.mock.patch(
+            "requests.get",
+            side_effect=mocked_resquests_get_exception
+            ):
+            response = self.movie.fetch_recom()
+            self.assertEqual(response, None)  
+        
     """Test test_api_connection function."""
     # def test_test_api_connection(self):
     #     pass
 
 
 if __name__ == "__main__":
+    # run with python -m unittest ./test/movie/TestMovie.py
     unittest.main()
