@@ -272,7 +272,10 @@ class TestMovie(unittest.TestCase):
                     "poster_url": "https://image.tmdb.org/t/p/w500/abc/dfg",
                     "genre_ids": ["28"],
                     "genre_names": ["Action"],
-                    "homepage": "homepage"
+                    "homepage": "homepage",
+                    "collection": "",
+                    "collection_poster_path": "",
+                    "collection_poster_url": ""
                 }
             )
         

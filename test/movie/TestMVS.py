@@ -1,6 +1,7 @@
 import unittest
 from unittest import mock
 import unittest.mock
+from unittest.mock import call
 import os
 
 from movie.mvs import MVS
@@ -126,18 +127,103 @@ class TestMVS(unittest.TestCase):
         self.assertEqual(results[1], ["e", "f", "g"])       
 
 
-    # def test_display_movie_details(self):
-    #     pass
+    """Test display_movie_details function."""
+    @unittest.mock.patch("builtins.print")
+    @unittest.mock.patch("movie.mvs.PRINT_MOOD", new="simple")
+    def test_display_movie_details(self, mock_print):
+        # Test default.
+        self.assertIsNone(self.mvs.display_movie_details())
+        mock_print.assert_called_with("Sorry, there is nothing to display :(")
 
-    # def test_display_music_details(self):
-    #     pass
+        # Test real value.
+        movie_info = {
+            "id": "123",
+            "original_language": "language_abc",
+            "original_title": "title_abc",
+            "overview": "overview_abc",
+            "release_date": "2024",
+            "backdrop_path": "/abc/abc",
+            "backdrop_url": "https://image.tmdb.org/t/p/w500/abc/abc",
+            "poster_path": "/abc/dfg",
+            "poster_url": "https://image.tmdb.org/t/p/w500/abc/dfg",
+            "genre_ids": ["28"],
+            "genre_names": ["Action"],
+            "collection": "abc",
+            "collection_poster_path": "/collect/abc",
+            "collection_poster_url": "https://image.tmdb.org/t/p/w500/collect/abc",
+            "homepage": "homepage"
+        }
+        with unittest.mock.patch.object(
+            MVS, "display_poster", return_value=None
+            ):
+            self.mvs.display_movie_details(movie_info)
+            mock_print.assert_has_calls(
+                [
+                    call("** title_abc **\n"),
+                    call("Overview: overview_abc"),
+                    call("Homepage: homepage"),
+                    call("Release Date: 2024"),
+                    call("Genre: [\'Action\']"),
+                    call("Belongs to collection: abc"),
+                    call()
+                ]
+            )
+
+    """Test display_music_details function"""
+    @unittest.mock.patch("builtins.print", clear=True)
+    @unittest.mock.patch("movie.mvs.PRINT_MOOD", new="simple")
+    def test_display_music_details(self, mock_print):
+        # Test default.
+        self.assertIsNone(self.mvs.display_music_details())
+        mock_print.assert_called_with("Sorry, there is nothing to display :(")
+
+        # Test real value.
+        music_info = {
+            "name": "abc",
+            "img_url": "abc",
+            "album_urls": "abc/abc",
+            "artists": "abc",
+            "release_date": 2024,
+        }
+        with unittest.mock.patch.object(
+            MVS, "display_poster", return_value=None
+            ):
+            self.mvs.display_music_details(music_info)
+            mock_print.assert_has_calls(
+                [
+                    call("** abc **\n"),
+                    call("Album: abc/abc"),
+                    call("Artists: abc"),
+                    call("Release Date: 2024"),
+                    call()
+                ]
+            )
 
     # def test_start(self):
     #     pass
 
-    # def test_decoration(self):
-    #     pass
+    """Test decoration function."""
+    @unittest.mock.patch("builtins.print")
+    @unittest.mock.patch("movie.mvs.PRINT_MOOD", new="simple")
+    def test_decoration(self, mock_print):
+        # Test default.
+        self.mvs.decoration()
+        mock_print.assert_called_with("******** info ********\n")
 
+        # Test different mode.
+        self.mvs.decoration(mode="title")
+        mock_print.assert_called_with("** info **\n")
+
+        self.mvs.decoration(mode="other")
+        mock_print.assert_called_with("******** info ********\n")
+
+        # Test maximum length.
+        self.mvs.decoration(info="aaaaaaaaaaaaaaaaaaaaa", mode="other")
+        nb_star = 18
+        mock_print.assert_called_with(
+            f"{'**' * nb_star} aaaaaaaaaaaaaaaaaaaaa {'**' * nb_star}\n")
+      
+        
 if __name__ == "__main__":
     # run with python -m unittest ./test/movie/TestMVS.py
     unittest.main()

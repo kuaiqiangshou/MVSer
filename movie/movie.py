@@ -226,6 +226,10 @@ class Movie:
                         movie_info["genre_names"] = names
 
                     # Get collections.
+                    movie_info["homepage"] = ""
+                    movie_info["collection"] = ""
+                    movie_info["collection_poster_path"] = ""
+                    movie_info["collection_poster_url"] = ""
                     collection_response = self.fetch_collection(
                         movie_info["id"]
                         )
@@ -249,8 +253,6 @@ class Movie:
                     if collection_response:
                         movie_info["homepage"] = collection_response.get(
                             "homepage", "")
-                    else:
-                        movie_info["homepage"] = ""
 
                     movies.append(movie_info) 
                     count += 1  
