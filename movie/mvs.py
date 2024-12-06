@@ -28,6 +28,7 @@ class MVS(Movie, Music):
         super().__init__()
         self.movie = Movie()
         self.music = Music()
+        self.user = User()
         self.preference = None
 
     def return_movie_results(
@@ -201,20 +202,17 @@ class MVS(Movie, Music):
         """Start function for MVSer package.
         """
         # Get user inputs
-        user = User()
-        user.user_input()
+        
+        self.user.user_input()
 
         # Display user preference.
-        self.decoration(
-                    emo=":star:",
-                    info=f"User Preference"
-                    )
-        user.display_preference()
+        self.decoration(emo=":star:", info=f"User Preference")
+        self.user.display_preference()
         print()
 
         # Get preference
-        self.preference = user.preference
-        user_mv_name_query = user.movie_name
+        self.preference = self.user.preference
+        user_mv_name_query = self.user.movie_name
 
         # Get movie results.
         movie_results = self.return_movie_results(

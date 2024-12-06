@@ -1,13 +1,13 @@
 import unittest
 from unittest import mock
 import unittest.mock
-from unittest.mock import call
+from unittest.mock import call, PropertyMock
 import os
 
 from movie.mvs import MVS
 from movie.movie import Movie
 from music_user.music import Music
-
+from music_user.user import User
 
 class TestMVS(unittest.TestCase):
     @unittest.mock.patch.dict(os.environ, {
@@ -26,6 +26,7 @@ class TestMVS(unittest.TestCase):
     def test_init_success(self):
         self.assertIsInstance(self.mvs.movie, Movie)
         self.assertIsInstance(self.mvs.music, Music)
+        self.assertIsInstance(self.mvs.user, User)
         self.assertIsNone(self.mvs.preference)
         
     """Test return_movie_results function."""
@@ -199,8 +200,12 @@ class TestMVS(unittest.TestCase):
                 ]
             )
 
-    # def test_start(self):
-    #     pass
+    @unittest.mock.patch.object(User, "user_input")
+    def test_start(self, mock_user_input):
+        with unittest.mock.patch.object(User, "preference", {}
+            ):
+            mock_preference = {}
+            self.assertEqual(self.mvs.preference, {})
 
     """Test decoration function."""
     @unittest.mock.patch("builtins.print")
