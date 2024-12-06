@@ -26,8 +26,13 @@ class Movie:
 
         self.url = self.config["basic_url"]
         self.header = self.config["header"]
-        self.header["Authorization"] += self.__TMDB_API_KEY
 
+        if not self.get_TMDB_key:
+            raise ValueError("Missing environment variable 'TMDB_API_KEY'. Please set it"\
+                  " up using 'export TMDB_API_KEY=<key>'")
+        
+        self.header["Authorization"] += self.__TMDB_API_KEY
+            
         # Test api connection.
         if not self.test_api_connection(self.url, self.__TMDB_API_KEY):
             raise ConnectionError()
