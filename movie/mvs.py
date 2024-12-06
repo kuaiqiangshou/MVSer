@@ -208,7 +208,6 @@ class MVS(Movie, Music):
         # Display user preference.
         self.decoration(emo=":star:", info=f"User Preference")
         self.user.display_preference()
-        print()
 
         # Get preference
         self.preference = self.user.preference
@@ -221,7 +220,7 @@ class MVS(Movie, Music):
         if not movie_results:
             self.decoration(
                 emo=":loudly_crying_face:", 
-                info=f"Sorry, there is no matched movie!"
+                info="Sorry, there is no matched movie!"
                 )
 
         # Get related music results.
@@ -257,7 +256,8 @@ class MVS(Movie, Music):
             if mv_recom_results:
                 self.decoration(
                     emo=":star:",
-                    info=f"Movies You May Like For {datetime.today().strftime('%Y-%m-%d')}"
+                    info=f"Movies You May Like For {
+                        datetime.today().strftime('%Y-%m-%d')}"
                     )
                 for item in mv_recom_results:
                     self.display_movie_details(item)

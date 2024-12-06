@@ -1,13 +1,14 @@
 import unittest
 from unittest import mock
 import unittest.mock
-from unittest.mock import call, PropertyMock
+from unittest.mock import call
 import os
 
 from movie.mvs import MVS
 from movie.movie import Movie
 from music_user.music import Music
 from music_user.user import User
+
 
 class TestMVS(unittest.TestCase):
     @unittest.mock.patch.dict(os.environ, {
@@ -129,7 +130,7 @@ class TestMVS(unittest.TestCase):
 
 
     """Test display_movie_details function."""
-    @unittest.mock.patch("builtins.print")
+    @unittest.mock.patch("builtins.print", clear=True)
     @unittest.mock.patch("movie.mvs.PRINT_MOOD", new="simple")
     def test_display_movie_details(self, mock_print):
         # Test default.
@@ -200,12 +201,65 @@ class TestMVS(unittest.TestCase):
                 ]
             )
 
-    @unittest.mock.patch.object(User, "user_input")
-    def test_start(self, mock_user_input):
-        with unittest.mock.patch.object(User, "preference", {}
+    @unittest.mock.patch("builtins.input")
+    @unittest.mock.patch("movie.mvs.MVS.decoration")
+    @unittest.mock.patch("music_user.user.User")
+    def test_start(self, mock_input, mock_decoration, mock_user):
+        mock_user.return_value.preference = {
+            "num_results": 3,
+            "music_version": "clean",
+            "movie_genre": None,
+            "music_genre": None,
+            "is_recom": {
+                "recom_type": "Both", 
+                "num_recom": 3,
+                "genre": "pop"
+            }
+        }
+        mock_user.return_value.user_input.return_value = None
+        mock_user.return_value.movie_name = "abc"
+        
+        with unittest.mock.patch.object(MVS, "return_movie_results"
+            ) as mock_return_movie_results:
+            with unittest.mock.patch.object(
+                MVS, "display_movie_details"
             ):
-            mock_preference = {}
-            self.assertEqual(self.mvs.preference, {})
+                # With empty movie results.
+                mock_return_movie_results.return_value = {}
+                self.mvs.start()
+                mock_decoration.assert_any_call(
+                    emo=":loudly_crying_face:",
+                    info="Sorry, there is no matched movie!"
+                )
+                with self.assertRaises(AssertionError):
+                    mock_decoration.assert_any_call(
+                        emo=":movie_camera:",
+                        info="Movie Details for abc"   
+                    )
+                with self.assertRaises(AssertionError):
+                    mock_decoration.assert_any_call(
+                        emo=":musical_notes:",
+                        info="Music Album in abc"
+                    )
+
+                # With non-empty movie results.
+                mock_decoration.reset_mock()
+                mock_return_movie_results.return_value = {"abc": 123}
+                self.mvs.start()
+                with self.assertRaises(AssertionError):
+                    mock_decoration.assert_any_call(
+                        emo=":loudly_crying_face:",
+                        info="Sorry, there is no matched movie!"
+                    )
+                mock_decoration.assert_any_call(
+                    emo=":movie_camera:",
+                    info="Movie Details for abc"   
+                )
+                mock_decoration.assert_any_call(
+                    emo=":musical_notes:",
+                    info="Music Album in abc"
+                )
+
 
     """Test decoration function."""
     @unittest.mock.patch("builtins.print")
@@ -231,4 +285,4 @@ class TestMVS(unittest.TestCase):
         
 if __name__ == "__main__":
     # run with python -m unittest ./test/movie/TestMVS.py
-    unittest.main()
+    unittest.main(argv =[''], verbosity=2, exit=False)
