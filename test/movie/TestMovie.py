@@ -304,7 +304,7 @@ class TestMovie(unittest.TestCase):
         self.assertEqual(results, ["a", "b", "c"])
 
     """Test fetch_recom function."""
-    def fetch_recom_success(self):
+    def test_fetch_recom_success(self):
         with unittest.mock.patch(
             "requests.get", side_effect=mocked_requests_get_200
             ):
@@ -316,10 +316,10 @@ class TestMovie(unittest.TestCase):
 
             self.assertIsInstance(response, dict)
 
-    def fetch_recom_fail(self):
+    def test_fetch_recom_fail(self):
         # Other status_code. 
         with unittest.mock.patch(
-            "requests.get", side_effect=mocked_requests_get_else
+            "requests.get", side_effect=("401")
             ):
             response = self.movie.fetch_recom()
             self.assertEqual(response, None)
@@ -341,8 +341,45 @@ class TestMovie(unittest.TestCase):
             self.assertEqual(response, None)  
         
     """Test test_api_connection function."""
-    # def test_test_api_connection(self):
-    #     pass
+    @unittest.mock.patch.dict(os.environ, {"TMDB_API_KEY": "abc"})
+    def test_test_api_connection_success(self):
+        with unittest.mock.patch(
+            "requests.get", side_effect=mocked_requests_get_200
+            ):
+            url = "https://api.themoviedb.org/3"
+            api_key = os.environ["TMDB_API_KEY"]
+            response = self.movie.test_api_connection(
+                api_url=url, api_key=api_key)
+            self.assertTrue(response)
+
+    @unittest.mock.patch.dict(os.environ, {"TMDB_API_KEY": "abc"})
+    def test_test_api_connection_fail(self):
+        # Other status_code. 
+        url = "https://api.themoviedb.org/3"
+        api_key = os.environ["TMDB_API_KEY"]
+        with unittest.mock.patch(
+            "requests.get", side_effect=mocked_requests_get_else
+            ):
+            response = self.movie.test_api_connection(url, api_key)
+            self.assertEqual(response, False)
+        
+        # Request error.
+        with unittest.mock.patch(
+            "requests.get",
+            side_effect=mocked_resquests_get_request_exception
+            ):
+            response = self.movie.test_api_connection(url, api_key)
+            self.assertEqual(response, False)
+ 
+        # Other error.
+        with unittest.mock.patch(
+            "requests.get",
+            side_effect=mocked_resquests_get_exception
+            ):
+            response = self.movie.test_api_connection(url, api_key)
+            self.assertEqual(response, False)  
+
+
 
 
 if __name__ == "__main__":

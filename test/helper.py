@@ -12,7 +12,7 @@ def mocked_requests_get_200(*args, **kwargs):
     return MockResponse({"key1": "value1"}, 200)
 
 def mocked_requests_get_else(*args, **kwargs):
-    return MockResponse(None, 401)
+    return MockResponse(None, "401")
 
 def mocked_resquests_get_request_exception(*args, **kwargs):
     raise requests.exceptions.RequestException

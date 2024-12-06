@@ -318,16 +318,18 @@ class Movie:
         
         try:
             # Send a test GET request to check connection
-            response = requests.get(f"{api_url}/authentication", headers=headers)
+            response = requests.get(
+                f"{api_url}/authentication", headers=headers
+                )
 
             if response.status_code == 200:
-                # print("Connection successful and API key is valid.")
                 return True
-            elif response.status_code == 401:
-                print("Invalid API key. Please check your API credentials.")
             else:
-                print(f"Connection failed. HTTP status code: {response.status_code}")
-                print("Response:", response.json())
+                raise APICallError(response.status_code)
         except requests.exceptions.RequestException as e:
             print(f"Error connecting to API: {e}")
+        except APICallError as e:
+            print(f"Error during API request: {e}")
+        except Exception as e:
+            print(f"Error during API request: {e}")
         return False
