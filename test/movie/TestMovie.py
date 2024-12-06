@@ -75,12 +75,11 @@ class TestMovie(unittest.TestCase):
     def test_movie_search(
         self, mock_fetch_movie, mock_movie_parse_response, 
         ):
-        self.movie.movie_search(None, {})
-        self.assertEqual(self.movie.movie_search("abc", {}), ["a", "b"])
+        results = self.movie.movie_search(None, {})
+        self.assertEqual(results, ["a", "b"])
         
-        self.movie.movie_search("abc", {})
-        self.assertEqual(self.movie.movie_search("abc", {}), ["a", "b"])
-
+        results = self.movie.movie_search("abc", {})
+        self.assertEqual(results, ["a", "b"])
 
     """Test fetch_movie function."""
     def test_fetch_movie_success(self):
@@ -163,6 +162,10 @@ class TestMovie(unittest.TestCase):
 
     """Test movie_parse_response function."""
     def test_movie_parse_response(self):
+
+        # Test default.
+        result = self.movie.movie_parse_response()
+        self.assertEqual(result, [])
 
         response = {
             "results": [
@@ -284,12 +287,27 @@ class TestMovie(unittest.TestCase):
         self.assertIsInstance(result, list)
         self.assertEqual(len(result), 0)
 
-    # def test_movie_recom(self):
-    #     pass
+    """Test movie_recom function."""
+    @unittest.mock.patch.object(Movie, "fetch_recom", return_value = {})
+    @unittest.mock.patch.object(
+        Movie, "movie_parse_response", return_value = ["a", "b", "c"]
+        )
+    def test_movie_recom(
+        self, mock_fetch_recom, mock_movie_parse_response
+        ):
+        # Test default value.
+        results = self.movie.movie_recom()
+        self.assertEqual(results, ["a", "b", "c"])
+        
+        # Test incorrect preference input.
+        results = self.movie.movie_recom(recom_preference="abc")
+        self.assertEqual(results, ["a", "b", "c"])
 
+    """Test fetch_recom function."""
     # def test_fetch_recom(self):
     #     pass
 
+    """Test test_api_connection function."""
     # def test_test_api_connection(self):
     #     pass
 

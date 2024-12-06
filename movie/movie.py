@@ -55,9 +55,10 @@ class Movie:
         """
 
         if not movie_name:
-            warnings.warn("There is no vaild movie name, "\
-                            "will return default 'Harry Potter' results."
-                            )
+            warnings.warn(
+                "There is no vaild movie name, will return default "
+                "'Harry Potter' results."
+                )
             movie_name = "Harry Potter"
             
         mv_basic_response = self.fetch_movie(movie_name)
@@ -145,7 +146,7 @@ class Movie:
         return None
 
     def movie_parse_response(
-            self, movie_response:dict, num_results:int=3, 
+            self, movie_response:dict={}, num_results:int=3, 
             genre_preference:list=None, is_recom:bool=False, 
         ) -> list:
         """Parse API response.
@@ -254,7 +255,7 @@ class Movie:
             print("Sorry, Couldn't find the movie :(")
         return movies[:num_results]
 
-    def movie_recom(self, recom_preference: dict[str, any]) -> list:
+    def movie_recom(self, recom_preference: dict[str, any]={}) -> list:
         """Get movie recommandation.
 
         Args:
@@ -264,10 +265,14 @@ class Movie:
             list: A list of recommandation movies.
         """
         recoms_response = self.fetch_recom()
+
+        if not isinstance(recom_preference, dict):
+            recom_preference = {}
+
         movie_recoms = self.movie_parse_response(
             movie_response=recoms_response,
-            num_results=recom_preference["num_recom"],
-            genre_preference=recom_preference["genre"],
+            num_results=recom_preference.get("num_recom", 3),
+            genre_preference=recom_preference.get("genre", None),
             is_recom=True
             )
         
