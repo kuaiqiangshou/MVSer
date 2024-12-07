@@ -2,7 +2,10 @@ import os
 import requests
 import json
 import os 
+import warnings
 
+from movie.exceptions import \
+    APICallError, MovieIDEmptyError
 class Movie:
     """Movie module to call TMDB API.
     """
@@ -23,13 +26,23 @@ class Movie:
 
         self.url = self.config["basic_url"]
         self.header = self.config["header"]
+
+        if not self.get_TMDB_key:
+            raise ValueError("Missing environment variable 'TMDB_API_KEY'. Please set it"\
+                  " up using 'export TMDB_API_KEY=<key>'")
+        
         self.header["Authorization"] += self.__TMDB_API_KEY
-
+            
         # Test api connection.
-        self.test_api_connection(self.url, self.__TMDB_API_KEY)
+        if not self.test_api_connection(self.url, self.__TMDB_API_KEY):
+            raise ConnectionError()
 
+    @property
+    def get_TMDB_key(self):
+        return self.__TMDB_API_KEY
+    
     def movie_search(
-            self, movie_name:str=None, user_preference:dict={}) -> list:
+            self, movie_name:str="", user_preference:dict={}) -> list:
         """Search movie inforamtion from TMDB by calling API using user input.
 
         Args:
@@ -40,16 +53,31 @@ class Movie:
         Returns:
             list: A list of movies information related to user input.
         """
+
+        if not movie_name:
+            warnings.warn(
+                "There is no vaild movie name, will return default "
+                "'Harry Potter' results."
+                )
+            movie_name = "Harry Potter"
+            
         mv_basic_response = self.fetch_movie(movie_name)
+
+        if not user_preference or not isinstance(user_preference, dict):
+            user_preference = {}
+            
+        num_results = user_preference.get("num_results", 3)
+        movie_genre = user_preference.get("movie_genre", "")
+
         movies = self.movie_parse_response(
             movie_response=mv_basic_response,
-            num_results=user_preference["num_results"],
-            genre_preference=user_preference["movie_genre"]
+            num_results=num_results,
+            genre_preference=movie_genre
             )
 
         return movies
 
-    def fetch_movie(self, movie_name:str=None) -> dict[str:any]:
+    def fetch_movie(self, movie_name:str="") -> dict[str:any]:
         """Fetch basic movie information.
 
         Returns:
@@ -63,21 +91,21 @@ class Movie:
             # Remove blank space and replace them to %20.
             movie_name = movie_name.replace(" ", "%20")
 
-            query = f"{self.url}{endpoint}?query={movie_name}\
-                &language=en-US&page=1"
-            mv_basic_response = requests.get(query, headers=self.header)
+            self.search_query = f"{self.url}{endpoint}?query={movie_name}"\
+                "&language=en-US&page=1"
+            mv_basic_response = requests.get(
+                self.search_query, headers=self.header)
 
             if mv_basic_response.status_code == 200:
-                # print("Data fetched successfully!")
                 mv_basic_response = mv_basic_response.json()
                 return mv_basic_response
             else:
-                print(
-                    f"Failed to fetch data. HTTP status code: \
-                        {mv_basic_response.status_code}"
-                    )
-                print("Response:", mv_basic_response.json())
+                raise APICallError(mv_basic_response.status_code)
         except requests.exceptions.RequestException as e:
+            print(f"Error during API request: {e}")
+        except APICallError as e:
+            print(f"Error during API request: {e}")
+        except Exception as e:
             print(f"Error during API request: {e}")
         return None
 
@@ -93,30 +121,36 @@ class Movie:
 
         try:
             # Make a GET request
+            if not id:
+                raise MovieIDEmptyError
+            
             endpoint = self.config["collection_endpoint"] \
                 .replace("MOVIE_ID", str(id))
 
-            query = f"{self.url}{endpoint}"
-            mv_col_response = requests.get(query, headers=self.header)
+            self.collection_query = f"{self.url}{endpoint}"
+            mv_col_response = requests.get(
+                self.collection_query, headers=self.header)
 
             if mv_col_response.status_code == 200:
-                # print("Data fetched successfully!")
                 mv_col_response = mv_col_response.json()
                 return mv_col_response
-                
             else:
-                print(
-                    f"Failed to fetch data. HTTP status code: \
-                        {mv_col_response.status_code}"
-                    )
-                print("Response:", mv_col_response.json())
+                raise APICallError(mv_col_response.status_code)
         except requests.exceptions.RequestException as e:
             print(f"Error during API request: {e}")
+        except APICallError as e:
+            print(f"Error during API request: {e}")
+        except Exception as e:
+            print(f"Error during API request: {e}")
+        except MovieIDEmptyError:
+            warnings.warn("There is no vaild movie ID, skip return "\
+                              "collection information.")
+
         return None
 
     def movie_parse_response(
-            self, movie_response:dict, num_results:int=3, 
-            genre_preference:list=None, is_recom:bool=False, 
+            self, movie_response:dict={}, num_results:int=3, 
+            genre_preference:str="", is_recom:bool=False, 
         ) -> list:
         """Parse API response.
 
@@ -124,8 +158,8 @@ class Movie:
             movie_response (dict): The response from API call.
             num_results (int, optional): The number of results to return. 
                 Defaults to 3.
-            genre_preference (list, optional): The user preference for genre. 
-                Defaults to None.
+            genre_preference (str, optional): The user preference for genre. 
+                Defaults to "".
             is_recom (bool, optional): A indicator whether parsing the 
                 recommandation response or not. We only provide collection 
                 information for non-recommand movies. Defaults to False.
@@ -136,18 +170,25 @@ class Movie:
         """
         movies = []
         count = 0
+
         if movie_response:
             results = movie_response["results"]
+
+            # Covert genre name to genre id.
+            if not isinstance(genre_preference, str):
+                genre_preference = ""
+            genre_id = self.config["MOVIE_GENRES_NAME_NUMBER"].get(
+                genre_preference.lower(), None)
+
             for res in results:
                 if (count >= num_results) or \
                     (
-                        genre_preference is not None and \
-                            genre_preference not in res["genre_ids"]
+                        genre_id and genre_id not in res["genre_ids"]
                     ):
                     continue
                 else:
                     movie_info = {}
-                    movie_info["id"] = res.get("id", None)
+                    movie_info["id"] = str(res.get("id", ""))
                     movie_info["original_language"] = res.get(
                         "original_language", None
                         )
@@ -163,16 +204,17 @@ class Movie:
                         )
                     movie_info["poster_path"] = res.get("poster_path", None)
                     movie_info["genre_ids"] = res.get("genre_ids", [])
-                    movie_info["collection"] = None
+                    if not isinstance(movie_info["genre_ids"], list):
+                        movie_info["genre_ids"] = [movie_info["genre_ids"]]
 
                     if movie_info["poster_path"]:
                         movie_info["poster_url"] = \
-                            f"https://image.tmdb.org/t/p/w500{\
+                            f"{self.config["poster_url"]}{\
                                 movie_info["poster_path"]}"
 
                     if movie_info["backdrop_path"]:
                         movie_info["backdrop_url"] = \
-                            f"https://image.tmdb.org/t/p/w500{\
+                            f"{self.config["poster_url"]}{\
                                 movie_info["backdrop_path"]}"
                         
                     if movie_info["genre_ids"]:
@@ -186,32 +228,41 @@ class Movie:
                         movie_info["genre_names"] = names
 
                     # Get collections.
+                    movie_info["homepage"] = ""
+                    movie_info["collection"] = ""
+                    movie_info["collection_poster_path"] = ""
+                    movie_info["collection_poster_url"] = ""
                     collection_response = self.fetch_collection(
                         movie_info["id"]
                         )
-                    if not is_recom:
-                        if collection_response["belongs_to_collection"]:
+                    if not is_recom and collection_response:
+                        if collection_response.get("belongs_to_collection", []):
                             movie_info["collection"] = collection_response[
                                 "belongs_to_collection"
-                                ]["name"]
+                                ].get("name", "")
                             movie_info["collection_poster_path"] = \
-                                collection_response["belongs_to_collection"][
-                                    "poster_path"
-                                    ]
+                                collection_response[
+                                    "belongs_to_collection"
+                                    ].get("poster_path", "")
                             if movie_info["collection_poster_path"]:
                                 movie_info["collection_poster_url"] = \
-                                    f"https://image.tmdb.org/t/p/w500{\
-                                        movie_info["collection_poster_path"]}"
-                        
-                    movie_info["homepage"] = collection_response["homepage"]
+                                    f"{self.config["poster_url"]}"\
+                                f"{movie_info["collection_poster_path"]}"
+                        else:
+                            print("Sorry :(, couldn't find related collection"\
+                                  " for this movie!")
+                                
+                    if collection_response:
+                        movie_info["homepage"] = collection_response.get(
+                            "homepage", "")
 
                     movies.append(movie_info) 
                     count += 1  
         else:
-            print("Sorry, Couldn't find the movie.")
+            print("Sorry, Couldn't find the movie :(")
         return movies[:num_results]
 
-    def movie_recom(self, recom_preference: dict[str, any]) -> list:
+    def movie_recom(self, recom_preference: dict[str, any]={}) -> list:
         """Get movie recommandation.
 
         Args:
@@ -221,10 +272,14 @@ class Movie:
             list: A list of recommandation movies.
         """
         recoms_response = self.fetch_recom()
+
+        if not isinstance(recom_preference, dict):
+            recom_preference = {}
+
         movie_recoms = self.movie_parse_response(
             movie_response=recoms_response,
-            num_results=recom_preference["num_recom"],
-            genre_preference=recom_preference["genre"],
+            num_results=recom_preference.get("num_recom", 3),
+            genre_preference=recom_preference.get("genre", None),
             is_recom=True
             )
         
@@ -236,21 +291,20 @@ class Movie:
             # Make a GET request
             endpoint = self.config["recommendation_endpoint"]
 
-            query = f"{self.url}{endpoint}"
-            mv_recom_response = requests.get(query, headers=self.header)
+            self.recom_query = f"{self.url}{endpoint}"
+            mv_recom_response = requests.get(
+                self.recom_query, headers=self.header)
 
             if mv_recom_response.status_code == 200:
-                # print("Data fetched successfully!")
                 mv_recom_response = mv_recom_response.json()
                 return mv_recom_response
-                
             else:
-                print(
-                    f"Failed to fetch data. HTTP status code: \
-                        {mv_recom_response.status_code}"
-                    )
-                print("Response:", mv_recom_response.json())
+                raise APICallError(mv_recom_response.status_code)
         except requests.exceptions.RequestException as e:
+            print(f"Error during API request: {e}")
+        except APICallError as e:
+            print(f"Error during API request: {e}")
+        except Exception as e:
             print(f"Error during API request: {e}")
         return None
 
@@ -271,16 +325,18 @@ class Movie:
         
         try:
             # Send a test GET request to check connection
-            response = requests.get(f"{api_url}/authentication", headers=headers)
+            response = requests.get(
+                f"{api_url}/authentication", headers=headers
+                )
 
             if response.status_code == 200:
-                # print("Connection successful and API key is valid.")
                 return True
-            elif response.status_code == 401:
-                print("Invalid API key. Please check your API credentials.")
             else:
-                print(f"Connection failed. HTTP status code: {response.status_code}")
-                print("Response:", response.json())
+                raise APICallError(response.status_code)
         except requests.exceptions.RequestException as e:
             print(f"Error connecting to API: {e}")
+        except APICallError as e:
+            print(f"Error during API request: {e}")
+        except Exception as e:
+            print(f"Error during API request: {e}")
         return False

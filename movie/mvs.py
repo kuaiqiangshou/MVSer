@@ -3,12 +3,13 @@ from io import BytesIO
 import requests
 from IPython.display import display
 from datetime import datetime
+import warnings
 
 PRINT_MOOD = ""
 try:
     import emoji
 except ModuleNotFoundError:
-    print(
+    warnings.warn(
         "Warning: module 'emoji' is not installed. For best visual experience"
         ", please install emoji by run 'pip install emoji'. More detail, please"
         " see https://pypi.org/project/emoji/"
@@ -27,10 +28,11 @@ class MVS(Movie, Music):
         super().__init__()
         self.movie = Movie()
         self.music = Music()
+        self.user = User()
         self.preference = None
 
     def return_movie_results(
-            self, movie_name: str="", user_preference: str=None, *args, **kwargs
+            self, movie_name: str="", user_preference: str={}, *args, **kwargs
             ) -> dict:
         """Search movie information
 
@@ -51,11 +53,12 @@ class MVS(Movie, Music):
         
         mo_results = {}
         for item in mo_infos:
-            mo_results[item["original_title"]] = item
+            if item.get("original_title", None):
+                mo_results[item["original_title"]] = item
         return mo_results
 
     def return_music_results(
-            self, movie_name: str="", user_preference: str=None, *args, **kwargs
+            self, movie_name: str="", user_preference: str={}, *args, **kwargs
             ) -> list:
         """Search relavant music results.
 
@@ -90,11 +93,18 @@ class MVS(Movie, Music):
         mo_recom_results = None
         mu_recom_results = None
 
-        if recom_preference["recom_type"] == "movie":
+        if not recom_preference or not isinstance(recom_preference, dict):
+            recom_preference = {
+                "recom_type": "both",
+                "num_recom": 3,
+                "genre": None,
+            }
+
+        if recom_preference.get("recom_type", None) == "movie":
             # return movie recommandations.
             mo_recom_results = self.movie.movie_recom(recom_preference)
             return mo_recom_results, []
-        elif recom_preference["recom_type"] == "music":
+        elif recom_preference.get("recom_type", None) == "music":
             # return music recommandations.
             mu_recom_results = self.music.music_recom(recom_preference)
             return [], mu_recom_results
@@ -112,6 +122,10 @@ class MVS(Movie, Music):
                 results. Defaults to {}.
         """
 
+        if not movie_info:
+            print("Sorry, there is nothing to display :(")
+            return None
+        
         # Display title.
         self.decoration(
             emo=":bright_button:", info=movie_info["original_title"], 
@@ -120,9 +134,7 @@ class MVS(Movie, Music):
 
         # Display poster.
         if movie_info["poster_url"]:
-            img_reponse = requests.get(movie_info["poster_url"])
-            img = Image.open(BytesIO(img_reponse.content))
-            display(img)
+            self.display_poster(movie_info["poster_url"])
 
         if movie_info["overview"]:
             print(f"Overview: {movie_info["overview"]}")
@@ -143,12 +155,11 @@ class MVS(Movie, Music):
         if movie_info["collection"]:
             print(f"Belongs to collection: {movie_info["collection"]}")
             if movie_info["collection_poster_url"]:
-                img_reponse = requests.get(movie_info["collection_poster_url"])
-                img = Image.open(BytesIO(img_reponse.content))
-                display(img)
+                self.display_poster(movie_info["collection_poster_url"])
 
         # For pretty print.
         print()
+        return None
     
     def display_music_details(self, music_info: dict[str:any]={}) -> None:
         """Display music details
@@ -157,6 +168,10 @@ class MVS(Movie, Music):
             music_info (dict[str, any]): The API response from music search 
                 results. Defaults to {}.
         """
+        if not music_info:
+            print("Sorry, there is nothing to display :(")
+            return None
+        
         # Display title.
         self.decoration(
             emo=":bright_button:", info=music_info["name"], mode="title"
@@ -164,9 +179,7 @@ class MVS(Movie, Music):
 
         # Display poster.
         if music_info["img_url"]:
-            img_reponse = requests.get(music_info["img_url"])
-            img = Image.open(BytesIO(img_reponse.content))
-            display(img)
+            self.display_poster(music_info["img_url"])
 
         if music_info["album_urls"]:
             print(f"Album: {music_info["album_urls"]}")
@@ -183,25 +196,22 @@ class MVS(Movie, Music):
 
         # For pretty print.
         print()
+        return None
 
     def start(self) -> None:
         """Start function for MVSer package.
         """
         # Get user inputs
-        user = User()
-        user.user_input()
+        
+        self.user.user_input()
 
         # Display user preference.
-        self.decoration(
-                    emo=":star:",
-                    info=f"User Preference"
-                    )
-        user.display_preference()
-        print()
+        self.decoration(emo=":star:", info=f"User Preference")
+        self.user.display_preference()
 
         # Get preference
-        self.preference = user.preference
-        user_mv_name_query = user.movie_name
+        self.preference = self.user.preference
+        user_mv_name_query = self.user.movie_name
 
         # Get movie results.
         movie_results = self.return_movie_results(
@@ -210,7 +220,7 @@ class MVS(Movie, Music):
         if not movie_results:
             self.decoration(
                 emo=":loudly_crying_face:", 
-                info=f"Sorry, there is no matched movie!"
+                info="Sorry, there is no matched movie!"
                 )
 
         # Get related music results.
@@ -246,7 +256,8 @@ class MVS(Movie, Music):
             if mv_recom_results:
                 self.decoration(
                     emo=":star:",
-                    info=f"Movies You May Like For {datetime.today().strftime('%Y-%m-%d')}"
+                    info=f"Movies You May Like on {
+                        datetime.today().strftime('%Y-%m-%d')}"
                     )
                 for item in mv_recom_results:
                     self.display_movie_details(item)
@@ -259,7 +270,20 @@ class MVS(Movie, Music):
                 for item in mu_recom_results:
                     self.display_music_details(item)
 
-    def decoration(self, emo: str="", info: str="", mode: str="") -> None:
+    def display_poster(self, url:str="") -> None:
+        """Display poster use url.
+
+        Args:
+            url (str, optional): The poster url. Defaults to "".
+        """
+        try:
+            img_reponse = requests.get(url)
+            img = Image.open(BytesIO(img_reponse.content))
+            display(img)
+        except Exception as e:
+            print(f"Display poster image error, please see detail: {e}.")
+
+    def decoration(self, emo: str="", info: str="info", mode: str="") -> None:
         """Pretty print function
 
         Args:
@@ -278,5 +302,4 @@ class MVS(Movie, Music):
         else:
             line = f"{emoji.emojize(emo * nb_emo)}"
 
-        print(f"{line} {info} {line}")
-        print()
+        print(f"{line} {info} {line}\n")
