@@ -23,6 +23,10 @@ class TestMVS(unittest.TestCase):
         ):
             self.mvs = MVS()
 
+    @classmethod
+    def setUpClass(cls):
+        return super().setUpClass()
+    
     """Test init function."""
     def test_init_success(self):
         self.assertIsInstance(self.mvs.movie, Movie)
@@ -282,6 +286,12 @@ class TestMVS(unittest.TestCase):
         mock_print.assert_called_with(
             f"{'**' * nb_star} aaaaaaaaaaaaaaaaaaaaa {'**' * nb_star}\n")
       
+    def tearDown(self):
+        print("tear down")
+
+    @classmethod
+    def tearDownClass(cls):
+        return super().tearDownClass()
         
 # if __name__ == "__main__":
 #     # run with python -m unittest ./test/movie/TestMVS.py

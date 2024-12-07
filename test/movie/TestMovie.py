@@ -16,6 +16,9 @@ class TestMovie(unittest.TestCase):
             ):
                 self.movie = Movie()
         
+    @classmethod
+    def setUpClass(cls):
+        return super().setUpClass()
     
     """Test init function."""
     def test_init_success(self):
@@ -380,6 +383,14 @@ class TestMovie(unittest.TestCase):
             ):
             response = self.movie.test_api_connection(url, api_key)
             self.assertEqual(response, False)  
+
+    def tearDown(self):
+        print("tear down")
+    
+    @classmethod
+    def tearDownClass(cls):
+        return super().tearDownClass()
+        
 
 # if __name__ == "__main__":
 #     # run with python -m unittest ./test/movie/TestMovie.py
