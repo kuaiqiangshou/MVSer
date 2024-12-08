@@ -1,5 +1,7 @@
 # MVSer (Movie and Music Tracker)
 
+[![Build Status](https://app.travis-ci.com/TenTen-Teng/MVSer.svg?token=1PJB3dvKbCVRgPaN4tdQ&branch=main)](https://app.travis-ci.com/TenTen-Teng/MVSer)
+
 - [MVSer (Movie and Music Tracker)](#mvser-movie-and-music-tracker)
   - [Structure](#structure)
     - [Sub-packages](#sub-packages)
