@@ -1,6 +1,6 @@
 requests==2.32.2
 Pillow
 Python-IO==0.3
-IPython==8.25.0
+IPython==8.18.0
 spotipy==2.24.0
 emoji==2.14.0
