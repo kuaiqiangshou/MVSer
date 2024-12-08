@@ -1,4 +1,5 @@
 import unittest
+
 from test.movie import TestMovie
 from test.movie import TestMVS
 from test.music import TestMusic
@@ -48,6 +49,7 @@ def test_suite():
     return suite
 
 if __name__ == "__main__":
+    # run with python -m test.test_suite
     suite = test_suite()
     runner = unittest.TextTestRunner()
     runner.run(suite)

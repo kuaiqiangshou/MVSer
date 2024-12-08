@@ -11,12 +11,7 @@ from music_user.user import User
 
 
 class TestMVS(unittest.TestCase):
-    @unittest.mock.patch.dict(os.environ, {
-         "TMDB_API_KEY": "abc",
-         "SPOTIFY_CLIENT_ID": "123",
-         "SPOTIFY_CLIENT_SECRET": "456"
-         }
-         )
+    
     def setUp(self):
         with unittest.mock.patch.object(
             Movie, "test_api_connection", return_value=True
@@ -25,6 +20,14 @@ class TestMVS(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.enterClassContext(
+            unittest.mock.patch.dict(os.environ, {
+                "TMDB_API_KEY": "abc",
+                "SPOTIFY_CLIENT_ID": "123",
+                "SPOTIFY_CLIENT_SECRET": "456"
+                }
+            )
+        )
         return super().setUpClass()
     
     """Test init function."""
@@ -287,7 +290,7 @@ class TestMVS(unittest.TestCase):
             f"{'**' * nb_star} aaaaaaaaaaaaaaaaaaaaa {'**' * nb_star}\n")
       
     def tearDown(self):
-        print("tear down")
+        self.mvs = None
 
     @classmethod
     def tearDownClass(cls):
