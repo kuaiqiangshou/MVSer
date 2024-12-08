@@ -8,7 +8,6 @@ from test.helper import *
     
 class TestMovie(unittest.TestCase):   
 
-    @unittest.mock.patch.dict(os.environ, {"TMDB_API_KEY": "abc"})
     def setUp(self):
         self.maxDiff = None
         with unittest.mock.patch.object(
@@ -18,6 +17,9 @@ class TestMovie(unittest.TestCase):
         
     @classmethod
     def setUpClass(cls):
+        cls.enterClassContext(
+            unittest.mock.patch.dict(os.environ, {"TMDB_API_KEY": "abc"})
+        )
         return super().setUpClass()
     
     """Test init function."""
@@ -385,13 +387,13 @@ class TestMovie(unittest.TestCase):
             self.assertEqual(response, False)  
 
     def tearDown(self):
-        print("tear down")
+        self.movie = None
     
     @classmethod
     def tearDownClass(cls):
         return super().tearDownClass()
         
 
-# if __name__ == "__main__":
-#     # run with python -m unittest ./test/movie/TestMovie.py
-#     unittest.main()
+if __name__ == "__main__":
+    # run with python -m unittest ./test/movie/TestMovie.py
+    unittest.main()

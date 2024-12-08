@@ -1,6 +1,6 @@
 import unittest
-from test.movie import TestMovie
-from test.movie import TestMVS
+from test.movie.TestMovie import TestMovie
+from test.movie.TestMVS import TestMVS
 
 def test_suite():
     suite = unittest.TestSuite()
@@ -29,6 +29,7 @@ def test_suite():
 
 
 if __name__ == "__main__":
+    # run with python -m test.test_suite
     suite = test_suite()
     runner = unittest.TextTestRunner()
     runner.run(suite)
