@@ -1,7 +1,6 @@
 # music.py
 
 import os
-from music_user.exceptions import APICallError, InvalidGenreError
 
 try:
     import spotipy
@@ -63,10 +62,9 @@ class Music:
         try:
             result = self.sp.search(q=f"{movie_name} soundtrack", type="album", limit=10)
             return result
-        except spotipy.SpotifyException as e:
-            raise APICallError(status_code=e.http_status, message="Spotify API error occurred.")
         except Exception as e:
-            raise APICallError(status_code=None, message=f"Unknown error: {str(e)}")
+            print(f"Error fetching music data: {e}")
+            return {}
 
     def music_recom(self, recom_preference: dict = {}) -> list:
         """
@@ -84,11 +82,9 @@ class Music:
                 music_response=recom_response,
                 num_results=recom_preference.get("num_recom", 3)
             )
-        except InvalidGenreError as e:
-            print(f"Invalid genre: {e}")
-            return []
         except Exception as e:
-            raise APICallError(status_code=None, message=f"Error during music recommendations: {str(e)}")
+            print(f"Error during music recommendations: {e}")
+            return []
 
     def fetch_recommendations(self, recom_preference: dict) -> dict:
         """
@@ -101,15 +97,17 @@ class Music:
             dict: The response dictionary from the Spotify API.
         """
         try:
-            genre = recom_preference.get("genre", "pop") or "pop"
-            if not isinstance(genre, str):
-                raise InvalidGenreError(genre)
+            # genre = recom_preference.get("genre", "pop")
+            if not recom_preference["genre"]:
+                genre = "pop"
+            else:
+                genre = recom_preference["genre"]
+                
             result = self.sp.search(q=genre, type="album", limit=recom_preference.get("num_recom", 3))
             return result
-        except spotipy.SpotifyException as e:
-            raise APICallError(status_code=e.http_status, message="Spotify API error occurred.")
         except Exception as e:
-            raise APICallError(status_code=None, message=f"Unknown error: {str(e)}")
+            print(f"Error fetching recommendations: {e}")
+            return {}
 
     def music_parse_response(self, music_response: dict, num_results: int = 3) -> list:
         """
