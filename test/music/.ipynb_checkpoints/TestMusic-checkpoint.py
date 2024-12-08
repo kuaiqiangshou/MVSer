@@ -1,17 +1,17 @@
 # TestMusic.py
 
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 import os
 from music_user.music import Music
-from test.helper import mocked_requests_get_200, mocked_requests_get_else
+from test.mock_helper import mocked_requests_get_200, mocked_requests_get_else
 
 class TestMusic(unittest.TestCase):
-    @patch.dict(os.environ, {"SPOTIFY_CLIENT_ID": "123", "SPOTIFY_CLIENT_SECRET": "456"})
     @classmethod
     def setUpClass(cls):
         """Set up a Music instance for all tests."""
-        cls.music = Music()
+        with patch.dict(os.environ, {"SPOTIFY_CLIENT_ID": "123", "SPOTIFY_CLIENT_SECRET": "456"}):
+            cls.music = Music()
 
     def setUp(self):
         """Prepare test variables."""
@@ -25,6 +25,7 @@ class TestMusic(unittest.TestCase):
         results = self.music.music_search(self.movie_name, self.user_preference)
         self.assertIsInstance(results, list)
         self.assertGreater(len(results), 0)
+        self.assertEqual(results[0]["name"], "Test Album")
 
     @patch("spotipy.Spotify.search", side_effect=mocked_requests_get_else)
     def test_fetch_music(self, mock_search):
@@ -39,6 +40,7 @@ class TestMusic(unittest.TestCase):
         results = self.music.music_recom(self.recom_preference)
         self.assertIsInstance(results, list)
         self.assertGreater(len(results), 0)
+        self.assertEqual(results[0]["name"], "Test Album")
 
     @patch("spotipy.Spotify.search", side_effect=mocked_requests_get_200)
     def test_fetch_recommendations(self, mock_search):
@@ -46,6 +48,7 @@ class TestMusic(unittest.TestCase):
         results = self.music.fetch_recommendations(self.recom_preference)
         self.assertIsInstance(results, dict)
         self.assertGreater(len(results.get("albums", {}).get("items", [])), 0)
+        self.assertEqual(results["albums"]["items"][0]["name"], "Test Album")
 
     def test_music_parse_response(self):
         """Test the music_parse_response function."""

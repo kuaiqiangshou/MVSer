@@ -1,7 +1,7 @@
 # TestUser.py
 
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 import os
 from music_user.user import User
 
@@ -45,9 +45,13 @@ class TestUser(unittest.TestCase):
     def test_display_preference(self, mock_print):
         """Test the display_preference method."""
         self.user.display_preference()
-        mock_print.assert_any_call("Movie Name: Harry Potter")
-        mock_print.assert_any_call("num_results: 3")
-        mock_print.assert_any_call("music_version: clean")
+        expected_calls = [
+            ("Movie Name:", "Harry Potter"),
+            ("User Preferences:",),
+        ]
+        expected_calls.extend((f"{key}: {value}",) for key, value in self.user.preference.items())
+        for call in expected_calls:
+            mock_print.assert_any_call(*call)
 
     def tearDown(self):
         """Clean up variables after each test."""
