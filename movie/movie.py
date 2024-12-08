@@ -92,7 +92,7 @@ class Movie:
             movie_name = movie_name.replace(" ", "%20")
 
             self.search_query = f"{self.url}{endpoint}?query={movie_name}"\
-                "&language=en-US&page=1"
+                f"&language=en-US&page=1"
             mv_basic_response = requests.get(
                 self.search_query, headers=self.header)
 
@@ -209,13 +209,13 @@ class Movie:
 
                     if movie_info["poster_path"]:
                         movie_info["poster_url"] = \
-                            f"{self.config["poster_url"]}{\
-                                movie_info["poster_path"]}"
+                            f"{self.config["poster_url"]}"\
+                                f"{movie_info["poster_path"]}"
 
                     if movie_info["backdrop_path"]:
                         movie_info["backdrop_url"] = \
-                            f"{self.config["poster_url"]}{\
-                                movie_info["backdrop_path"]}"
+                            f"{self.config["poster_url"]}"\
+                                f"{movie_info["backdrop_path"]}"
                         
                     if movie_info["genre_ids"]:
                         names = []
