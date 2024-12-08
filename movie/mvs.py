@@ -137,23 +137,23 @@ class MVS(Movie, Music):
             self.display_poster(movie_info["poster_url"])
 
         if movie_info["overview"]:
-            print(f"Overview: {movie_info["overview"]}")
+            print(f"Overview: {movie_info['overview']}")
 
         if movie_info["homepage"]:
-            print(f"Homepage: {movie_info["homepage"]}")
+            print(f"Homepage: {movie_info['homepage']}")
         else:
             print(f"Homepage: Sorry there is no available link. -.-")
 
         if movie_info["release_date"]:
-            print(f"Release Date: {movie_info["release_date"]}")
+            print(f"Release Date: {movie_info['release_date']}")
         else:
             print(f"Release Date: Unknown.")
 
         if movie_info["genre_names"]:
-            print(f"Genre: {movie_info["genre_names"]}")
+            print(f"Genre: {movie_info['genre_names']}")
         
         if movie_info["collection"]:
-            print(f"Belongs to collection: {movie_info["collection"]}")
+            print(f"Belongs to collection: {movie_info['collection']}")
             if movie_info["collection_poster_url"]:
                 self.display_poster(movie_info["collection_poster_url"])
 
@@ -182,15 +182,15 @@ class MVS(Movie, Music):
             self.display_poster(music_info["img_url"])
 
         if music_info["album_urls"]:
-            print(f"Album: {music_info["album_urls"]}")
+            print(f"Album: {music_info['album_urls']}")
         else:
             print(f"Album: Sorry there is no available link. -.-")
 
         if music_info["artists"]:
-            print(f"Artists: {music_info["artists"]}")
+            print(f"Artists: {music_info['artists']}")
 
         if music_info["release_date"]:
-            print(f"Release Date: {music_info["release_date"]}")
+            print(f"Release Date: {music_info['release_date']}")
         else:
             print(f"Release Date: Unknown.")
 
@@ -256,8 +256,8 @@ class MVS(Movie, Music):
             if mv_recom_results:
                 self.decoration(
                     emo=":star:",
-                    info=f"Movies You May Like on {
-                        datetime.today().strftime('%Y-%m-%d')}"
+                    info=f"Movies You May Like on "\
+                        f"{datetime.today().strftime('%Y-%m-%d')}"
                     )
                 for item in mv_recom_results:
                     self.display_movie_details(item)

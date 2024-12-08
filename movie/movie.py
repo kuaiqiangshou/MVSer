@@ -209,13 +209,13 @@ class Movie:
 
                     if movie_info["poster_path"]:
                         movie_info["poster_url"] = \
-                            f"{self.config["poster_url"]}"\
-                                f"{movie_info["poster_path"]}"
+                            f"{self.config['poster_url']}"\
+                                f"{movie_info['poster_path']}"
 
                     if movie_info["backdrop_path"]:
                         movie_info["backdrop_url"] = \
-                            f"{self.config["poster_url"]}"\
-                                f"{movie_info["backdrop_path"]}"
+                            f"{self.config['poster_url']}"\
+                                f"{movie_info['backdrop_path']}"
                         
                     if movie_info["genre_ids"]:
                         names = []
@@ -246,8 +246,8 @@ class Movie:
                                     ].get("poster_path", "")
                             if movie_info["collection_poster_path"]:
                                 movie_info["collection_poster_url"] = \
-                                    f"{self.config["poster_url"]}"\
-                                f"{movie_info["collection_poster_path"]}"
+                                    f"{self.config['poster_url']}"\
+                                f"{movie_info['collection_poster_path']}"
                         else:
                             print("Sorry :(, couldn't find related collection"\
                                   " for this movie!")

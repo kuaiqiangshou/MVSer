@@ -1,0 +1,7 @@
+requests==2.32.2
+Pillow==11.0.0
+Python-IO==0.3
+IPython==8.18.0
+spotipy==2.24.0
+emoji==2.14.0
+urllib3==1.26.6
