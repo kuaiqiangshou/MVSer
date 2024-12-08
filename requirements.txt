@@ -1,5 +1,5 @@
 requests==2.32.2
-PIL
+Pillow
 Python-IO==0.3
 IPython==8.25.0
 spotipy==2.24.0
