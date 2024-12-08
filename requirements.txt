@@ -1,5 +1,4 @@
 requests==2.32.2
-json==2.0.9
 PIL==10.3.0
 Python-IO==0.3
 IPython==8.25.0
