@@ -1,5 +1,5 @@
 language: python
 python:
-  - "3.12.2"
+  - "3.10"
 script:
   - python -m test.test_suite
