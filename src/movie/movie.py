@@ -4,7 +4,7 @@ import json
 import os 
 import warnings
 
-from movie.exceptions import \
+from src.movie.exceptions import \
     APICallError, MovieIDEmptyError
 class Movie:
     """Movie module to call TMDB API.

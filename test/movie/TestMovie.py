@@ -3,7 +3,7 @@ import os
 from unittest import mock
 import unittest.mock
 
-from movie.movie import Movie
+from src.movie.movie import Movie
 from test.helper import *
     
 class TestMovie(unittest.TestCase):   

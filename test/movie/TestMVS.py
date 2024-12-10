@@ -4,10 +4,10 @@ import unittest.mock
 from unittest.mock import call
 import os
 
-from movie.mvs import MVS
-from movie.movie import Movie
-from music_user.music import Music
-from music_user.user import User
+from src.movie.mvs import MVS
+from src.movie.movie import Movie
+from src.music_user.music import Music
+from src.music_user.user import User
 
 
 class TestMVS(unittest.TestCase):
@@ -138,7 +138,7 @@ class TestMVS(unittest.TestCase):
 
     """Test display_movie_details function."""
     @unittest.mock.patch("builtins.print", clear=True)
-    @unittest.mock.patch("movie.mvs.PRINT_MOOD", new="simple")
+    @unittest.mock.patch("src.movie.mvs.PRINT_MOOD", new="simple")
     def test_display_movie_details(self, mock_print):
         # Test default.
         self.assertIsNone(self.mvs.display_movie_details())
@@ -180,7 +180,7 @@ class TestMVS(unittest.TestCase):
 
     """Test display_music_details function"""
     @unittest.mock.patch("builtins.print", clear=True)
-    @unittest.mock.patch("movie.mvs.PRINT_MOOD", new="simple")
+    @unittest.mock.patch("src.movie.mvs.PRINT_MOOD", new="simple")
     def test_display_music_details(self, mock_print):
         # Test default.
         self.assertIsNone(self.mvs.display_music_details())
@@ -270,7 +270,7 @@ class TestMVS(unittest.TestCase):
 
     """Test decoration function."""
     @unittest.mock.patch("builtins.print")
-    @unittest.mock.patch("movie.mvs.PRINT_MOOD", new="simple")
+    @unittest.mock.patch("src.movie.mvs.PRINT_MOOD", new="simple")
     def test_decoration(self, mock_print):
         # Test default.
         self.mvs.decoration()

@@ -16,9 +16,9 @@ except ModuleNotFoundError:
             )
     PRINT_MOOD = "simple"
 
-from movie.movie import Movie
-from music_user.music import Music
-from music_user.user import User
+from src.movie.movie import Movie
+from src.music_user.music import Music
+from src.music_user.user import User
 
 class MVS(Movie, Music):
     """Used to connect Movie and Music classes."""

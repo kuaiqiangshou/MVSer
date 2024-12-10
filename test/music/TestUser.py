@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import patch
 import os
-from music_user.user import User
+from src.music_user.user import User
 
 class TestUser(unittest.TestCase):
 
