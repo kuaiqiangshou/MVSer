@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import patch
 import os
-from music_user.music import Music
+from src.music_user.music import Music
 from test.mock_helper import mocked_requests_get_200, mocked_requests_get_else
 
 class TestMusic(unittest.TestCase):

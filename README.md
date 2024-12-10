@@ -104,4 +104,4 @@ mvser.start()
 ```
 
 >[!NOTE]
-> Please see [test.ipynb](./test.ipynb) as exmaple to call MVSer package.
+> Please see [test.ipynb](./src/test.ipynb) as exmaple to call MVSer package.
