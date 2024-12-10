@@ -6,12 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "MVSer"
 version = "0.0.1"
 authors = [
-    {
-        name = "Teng Li", email = "tengli11@student.ubc.ca"
-    },
-    {
-        name = "Minju Yu", email = "minjuyu@student.ubc.ca"
-    }
+  {name = "Teng Li", email = "tengli11@student.ubc.ca"},
+  {name = "Minju Yu", email = "minjuyu@student.ubc.ca"},
 ]
 description = "MVSer stands for Movie and Music Tracker. It is a Python package designed to help users search for music featured in movies, explore detailed movie and music information, and get recommendations. Using public APIs like TMDB and Spotify, MVSer offers a seamless experience that combines movie and music data tailored to the user's preferences."
 readme = "README.md"
