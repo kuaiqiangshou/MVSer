@@ -1,8 +1,20 @@
+Metadata-Version: 2.1
+Name: MVSer
+Version: 0.0.1
+Summary: MVSer stands for Movie and Music Tracker. It is a Python package designed to help users search for music featured in movies, explore detailed movie and music information, and get recommendations. Using public APIs like TMDB and Spotify, MVSer offers a seamless experience that combines movie and music data tailored to the user's preferences.
+Author-email: Teng Li <tengli11@student.ubc.ca>, Minju Yu <minjuyu@student.ubc.ca>
+Project-URL: Homepage, https://github.com/TenTen-Teng/MVSer/tree/main
+Project-URL: Issues, https://github.com/TenTen-Teng/MVSer/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
 # MVSer (Movie and Music Tracker)
 
 [![Build Status](https://app.travis-ci.com/TenTen-Teng/MVSer.svg?token=1PJB3dvKbCVRgPaN4tdQ&branch=main)](https://app.travis-ci.com/TenTen-Teng/MVSer)
-
-[PyPI](https://pypi.org/project/MVSer/0.0.1/)
 
 - [MVSer (Movie and Music Tracker)](#mvser-movie-and-music-tracker)
   - [Structure](#structure)
