@@ -2,7 +2,9 @@
 
 [![Build Status](https://app.travis-ci.com/TenTen-Teng/MVSer.svg?token=1PJB3dvKbCVRgPaN4tdQ&branch=main)](https://app.travis-ci.com/TenTen-Teng/MVSer)
 
-[PyPI](https://pypi.org/project/MVSer/0.0.1/)
+
+**Please check [PyPi Link](https://pypi.org/project/MVSer/0.0.1/)**
+
 
 - [MVSer (Movie and Music Tracker)](#mvser-movie-and-music-tracker)
   - [Structure](#structure)
